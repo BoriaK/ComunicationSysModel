@@ -33,7 +33,7 @@ N_samp = len(t)
 alpha = 0.25  # roll off factor
 # Ts = 1
 # Fs = 2  # 2 samples per symbol
-g_SRRC = np.sqrt(2) * rrcosfilter(N_samp, alpha, Tsym, F_samp)[1]
+g_SRRC = rrcosfilter(N_samp, alpha, GI+Tsym, F_samp)[1]
 # plt.plot(t, g_SRRC)
 # plt.show()
 ################################################################
@@ -44,12 +44,12 @@ for k in range(int(len(F_axis)/2)):
         # CW_tk[k] = [0]  # maybe will need an array of zeros?
         # CW_fk[k] = [0]
         CW_tk.append(0)
-        CW_fk.append(0)
+        # CW_fk.append(0)
     else:
         # CW_tk[k] = np.exp(1j * 2 * np.pi * (k - len(F_axis) / 2) * Delta_F * t)
         # CW_fk[k] = (1 / len(CW_tk[k])) * np.fft.fft(CW_tk[k])
         CW_tk.append(np.exp(1j * 2 * np.pi * (k - len(F_axis) / 2) * Delta_F * t))
-        CW_fk.append((1 / len(CW_tk[k])) * np.fft.fft(CW_tk[k]))
+        # CW_fk.append((1 / len(CW_tk[k])) * np.fft.fft(CW_tk[k]))
 
     # S_tk[k] = Dta[k]*X_t * CW_tk[k]
     # S_tk.append(Dta[k]*X_t * CW_tk[k])
@@ -64,16 +64,16 @@ for k in range(int(len(F_axis)/2), len(F_axis)):
         # CW_tk[k] = 0
         # CW_fk[k] = 0
         CW_tk.append(0)
-        CW_fk.append(0)
+        # CW_fk.append(0)
 
     else:
         # CW_tk[k] = np.exp(1j * 2 * np.pi * (k - len(F_axis) / 2) * Delta_F * t)
         # CW_fk[k] = (1 / len(CW_tk[k])) * np.fft.fft(CW_tk[k])
         CW_tk.append(np.exp(1j * 2 * np.pi * (k - len(F_axis) / 2) * Delta_F * t))
-        CW_fk.append((1 / len(CW_tk[k])) * np.fft.fft(CW_tk[k]))
+        # CW_fk.append((1 / len(CW_tk[k])) * np.fft.fft(CW_tk[k]))
 
     # S_tk[k] = Dta[k]*X_t * CW_tk[k]
-    S_tk.append(Dta[k] * X_t * CW_tk[k])
+    # S_tk.append(Dta[k] * X_t * CW_tk[k])
     # S_t[k] = g_SRRC * CW_t[k]
     S_tk.append(Dta[k] * g_SRRC * CW_tk[k])
     # S_fk[k] = (1 / len(S_tk[k])) * np.fft.fft(S_tk[k])
