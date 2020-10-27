@@ -82,11 +82,12 @@ for k in range(int(len(F_axis)/2), len(F_axis)):
 # add summation along the frequency axis:
 S_f = np.sum(S_fk, axis=0)
 
+plt.figure(1)
 plt.plot(F_axis, np.fft.fftshift(S_f))
 # plt.plot(F_axis, np.fft.fftshift(S_f[int(len(F_axis)/2)-1])) # plot the middle tone only
 plt.grid()
 plt.show()
-plt.figure()
+plt.figure(2)
 # for k in range(len(CW_fk)):
 #     plt.plot(F_axis, np.fft.fftshift(CW_fk[k]))
 for k in range(len(S_fk)):
