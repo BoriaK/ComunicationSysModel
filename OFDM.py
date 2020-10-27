@@ -64,6 +64,9 @@ for k in range(int(len(F_axis)/2), len(F_axis)):
     # S_t[k] = g_SRRC * CW_t[k]
     S_f[k] = (1 / len(S_t[k])) * np.fft.fft(S_t[k])
 
+# add summation along the frequency axis:
+
+
 # plt.plot(F_axis, np.fft.fftshift(S_f[int(len(F_axis)/2)]))   # plot the middle tone only
 # plt.plot(F_axis, np.fft.fftshift(S_f[int(len(F_axis)/2)-1]))
 # plt.show()
