@@ -4,11 +4,9 @@ from commpy.filters import rrcosfilter
 from scipy import signal
 import math
 
+
 # random 56 symbols of data
 rng = np.random.default_rng()
-
-# BPSK
-# Dta = 2 * rng.integers(1, high=2, size=56, dtype=np.int64, endpoint=True) - 3
 
 # QPSK
 M = 16
@@ -35,15 +33,7 @@ CW_fk = []
 S_tk = []
 S_fk = []
 
-# Square Root raised cosine pulse: Not nessesary at this point
-N_samp = len(t)
-alpha = 0.25  # roll off factor
-g_SRRC = rrcosfilter(N_samp, alpha, GI + Tsym, F_samp)[1]
-# plt.plot(t, g_SRRC)
-# plt.show()
-################################################################
-# creating the symbols in frequency domain:
-
+# prepare the data in frequency domain:
 skip = 0
 for k in range(len(F_axis)):
     if (k - len(F_axis) / 2) < -28 or (k - len(F_axis) / 2) == 0 or (k - len(F_axis) / 2) > 28:
@@ -51,27 +41,70 @@ for k in range(len(F_axis)):
         skip += 1
     else:
         CW_tk.append((1 / np.sqrt(Tsym)) * np.exp(1j * 2 * np.pi * (k - len(F_axis) / 2) * Delta_F * t))
-    S_tk.append(Dta[k-skip] * CW_tk[k])
+    CW_fk.append((1/len(F_axis))*np.fft.fft(CW_tk[k]))
+    S_fk.append(np.convolve(Dta[k-skip], CW_fk[k]))
 
 
-# add summation along the frequency axis:
-# this is the signal combined of all the symbols in time:
-S_t = np.sum(S_tk, axis=0)
-
-# The signal with all the Symbols in frequency domain:
-S_f = (1 / len(S_t)) * np.fft.fft(S_t)
-
-plt.figure(1)
-plt.plot(F_axis, np.fft.fftshift(S_f))
+plt.figure()
+plt.plot(F_axis, np.fft.fftshift(CW_fk))
 plt.xlabel('Frequency')
-plt.ylabel('S(f)')
+plt.ylabel('CW_k(f)')
 plt.grid()
 plt.show()
-plt.figure(2)
+
+plt.figure()
+plt.plot(F_axis, np.fft.fftshift(S_fk))
+plt.xlabel('Frequency')
+plt.ylabel('CW_k(f)')
+plt.grid()
+plt.show()
+
+# not sure weather it's necessary
+S_f = np.sum(S_fk, axis=0)
+CW_f = np.sum(CW_fk, axis=0)
+
+# plt.figure()
+# plt.plot(F_axis, np.fft.fftshift(CW_f))
+# plt.xlabel('Frequency')
+# plt.ylabel('CW(f)')
+# plt.grid()
+# plt.show()
+
+# plt.figure()
+# plt.plot(F_axis, np.fft.fftshift(S_f))
+# plt.xlabel('Frequency')
+# plt.ylabel('CW(f)')
+# plt.grid()
+# plt.show()
+
+# generating the time OFDM signal:
+S_t = np.fft.ifft(S_fk, axis=-1)
+plt.figure()
 plt.plot(t, S_t)
 plt.xlabel('Time')
 plt.ylabel('S(t)')
 plt.grid()
+plt.show()
+
+plt.figure()
+plt.subplot(3, 1, 1)
+plt.plot(t, S_t[4])
+plt.xlabel('Time')
+plt.ylabel('S_1(t)')
+plt.grid()
+
+plt.subplot(3, 1, 2)
+plt.plot(t, S_t[15])
+plt.xlabel('Time')
+plt.ylabel('S_5(t)')
+plt.grid()
+
+plt.subplot(3, 1, 3)
+plt.plot(t, S_t[25])
+plt.xlabel('Time')
+plt.ylabel('S_15(t)')
+plt.grid()
+
 plt.show()
 
 print('')
