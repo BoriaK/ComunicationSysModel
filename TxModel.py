@@ -18,7 +18,7 @@ def TxMod(M, n):
         M))  # quadrature data
     m = m_i + 1j * m_q
 
-    # converting bit stream to symbols - Gray Coding
+    # Mapper - converting bit stream to symbols - Gray Coding
     ind1 = (np.real(m) > 0)
     ind2 = (np.imag(m) > 0)
     ind3 = (np.real(m) < 0)
