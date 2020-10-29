@@ -8,7 +8,7 @@ import math
 rng = np.random.default_rng()
 
 # BPSK
-Dta = 2 * rng.integers(1, high=2, size=64, dtype=np.int64, endpoint=True) - 3
+# Dta = 2 * rng.integers(1, high=2, size=64, dtype=np.int64, endpoint=True) - 3
 
 # QPSK
 M = 16
