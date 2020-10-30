@@ -7,14 +7,17 @@ import math
 # random 56 symbols of data
 rng = np.random.default_rng()
 
-# 16QAM
-M = 16
-# infase data
-m_i = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56, dtype=np.int64, endpoint=True) - 1 - int(np.sqrt(M))
-# quadrature data
-m_q = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56, dtype=np.int64, endpoint=True) - 1 - int(np.sqrt(M))
+# # 16QAM
+# M = 16
+# # infase data
+# m_i = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56, dtype=np.int64, endpoint=True) - 1 - int(np.sqrt(M))
+# # quadrature data
+# m_q = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56, dtype=np.int64, endpoint=True) - 1 - int(np.sqrt(M))
+#
+# Dta = m_i + 1j * m_q
 
-Dta = m_i + 1j * m_q
+# BPSK
+Dta = 2 * rng.integers(1, high=2, size=56, dtype=np.int64, endpoint=True) - 3
 
 GI = 0.8 * 1e-6  # 0.8[uS] Long GI
 Tsym = 3.2 * 1e-6  # 3.2 [uS] symbol time
@@ -44,19 +47,19 @@ for k in range(len(F_axis)):
     CW_fk.append((1 / len(F_axis)) * np.fft.fft(CW_tk[k]))
     S_fk.append(np.convolve(Dta[k - skip], CW_fk[k]))
 
-plt.figure()
-plt.plot(F_axis, np.fft.fftshift(CW_fk))
-plt.xlabel('Frequency')
-plt.ylabel('CW_k(f)')
-plt.grid()
-plt.show()
+# plt.figure()
+# plt.plot(F_axis, np.fft.fftshift(CW_fk))
+# plt.xlabel('Frequency')
+# plt.ylabel('CW_k(f)')
+# plt.grid()
+# plt.show()
 
-plt.figure()
-plt.plot(F_axis, np.fft.fftshift(S_fk))
-plt.xlabel('Frequency')
-plt.ylabel('S_k(f)')
-plt.grid()
-plt.show()
+# plt.figure()
+# plt.plot(F_axis, np.fft.fftshift(S_fk))
+# plt.xlabel('Frequency')
+# plt.ylabel('S_k(f)')
+# plt.grid()
+# plt.show()
 
 # not sure weather it's necessary
 S_f = np.sum(S_fk, axis=0)
