@@ -43,7 +43,7 @@ for k in range(len(F_axis)):
 
 S_t = np.sum(S_tk, axis=0)
 
-# Plot the OFDM Symbol in time
+# Plot the OFDM Symbol in Time domain
 plt.figure()
 plt.plot(t, S_t)
 plt.xlabel('Time')
@@ -73,7 +73,7 @@ plt.grid()
 
 plt.show()
 
-# OFDM Symbol in frequency:
+# OFDM Symbol in Frequency domain:
 S_f = np.fft.fft(S_t)
 
 plt.figure()
@@ -83,5 +83,19 @@ plt.ylabel('S(f)')
 plt.grid()
 plt.show()
 
+# inserting cyclic prefix:
+S_t_w_CP = np.zeros(int(len(S_t)+16), dtype=np.complex)
+CP = S_t[range(int(len(S_t)-16), len(S_t))]
+S_t_w_CP[range(16)] = CP
+S_t_w_CP[range(16, len(S_t_w_CP))] = S_t
+
+t_w_CP = np.arange(0, Tsym+GI, 1 / F_samp)  # new Symbol time includes cyclic prefix
+
+plt.figure()
+plt.plot(t_w_CP, S_t_w_CP)
+plt.xlabel('Time')
+plt.ylabel('S(t) with GI')
+plt.grid()
+plt.show()
 
 print('')

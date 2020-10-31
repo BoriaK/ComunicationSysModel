@@ -41,6 +41,7 @@ for k in range(len(F_axis)):
 # prepare time domain signal using IFFT:
 S_t = np.fft.ifft(S_f, n=64)
 
+# OFDM symbol in Frequency domain
 plt.figure()
 plt.plot(F_axis, np.abs(S_f))
 plt.xlabel('Frequency')
@@ -48,6 +49,7 @@ plt.ylabel('S(f)')
 plt.grid()
 plt.show()
 
+# OFDM symbol in Time domain
 plt.figure()
 plt.plot(t, S_t)
 plt.xlabel('Time')
@@ -57,7 +59,7 @@ plt.show()
 
 # Parallel to serial: ?
 
-# incerting cyclic prefix:
+# inserting cyclic prefix:
 S_t_w_CP = np.zeros(int(len(S_t)+16), dtype=np.complex)
 CP = S_t[range(int(len(S_t)-16), len(S_t))]
 S_t_w_CP[range(16)] = CP
