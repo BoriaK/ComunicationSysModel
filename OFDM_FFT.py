@@ -47,6 +47,7 @@ plt.plot(F_axis, np.abs(S_f))
 plt.xlabel('Frequency')
 plt.ylabel('S(f)')
 plt.grid()
+plt.title('OFDM symbol in frequency domain')
 plt.show()
 
 # OFDM symbol in Time domain
@@ -55,6 +56,7 @@ plt.plot(t, S_t)
 plt.xlabel('Time')
 plt.ylabel('S(t)')
 plt.grid()
+plt.title('OFDM symbol in time domain')
 plt.show()
 
 # Parallel to serial: ?
@@ -71,9 +73,21 @@ plt.figure()
 plt.plot(t_w_CP, S_t_w_CP)
 plt.xlabel('Time')
 plt.ylabel('S(t) with GI')
+plt.title('OFDM symbol with CP in time domain')
+plt.grid()
+plt.show()
+
+# D/A converter:
+# up sample by factor of 5
+# S_t_w_CP_up = signal.resample_poly(S_t_w_CP, 5, 1)
+(S_t_w_CP_up, S_t_w_CP) = signal.resample(S_t_w_CP, 5*len(S_t_w_CP), t_w_CP, domain='time')
+
+plt.figure()
+plt.plot(S_t_w_CP, S_t_w_CP_up)
+plt.xlabel('Time')
+plt.ylabel('S(t) with GI')
+plt.title('upsampled OFDM symbol with CP in time domain')
 plt.grid()
 plt.show()
 
 
-
-print('')

@@ -41,10 +41,16 @@ def TxMod(M, n):
     m_SRRC = np.convolve(m_upS, g_SRRC, mode='same')  # add a physical shape to the pulse
     m_SRRC = signal.resample(m_SRRC, 16 * n)  # upsample the waveform to 16 samples per symbol
 
-    # plt.plot(m_SRRC[range(0, 8*16)])   # print 8 symbols (in time domain)
+    plt.plot(m_SRRC[range(8 * 16)])  # print 8 symbols (in time domain)
+    plt.show()
 
-    Es = (1 / (100 * 16)) * np.sum(np.power(np.abs(m_SRRC[range(0, 100 * 16)]), 2))
+    Es = (1 / (100 * 16)) * np.sum(np.power(np.abs(m_SRRC[range(100 * 16)]), 2))
     Eb = (1 / np.log2(M)) * Es
     return m_SRRC
 
 
+def main():
+    txsig = TxMod(M, n)
+
+
+main()
