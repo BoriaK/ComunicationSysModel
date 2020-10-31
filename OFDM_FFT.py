@@ -21,10 +21,10 @@ Tsym = 3.2 * 1e-6  # 3.2 [uS] symbol time
 Delta_F = 1 / Tsym
 F = 1 / (Tsym + GI)  # analog Frequency
 F_samp = 20 * 1e6  # sample frquency 20MHz
-# F_axis = np.arange(-2 * Delta_F, 2 * Delta_F, Delta_F)
 
 t = np.arange(0, Tsym, 1 / F_samp)
 F_axis = np.arange(-F_samp / 2, F_samp / 2, F_samp / len(t))
+
 S_t = np.zeros(len(F_axis), dtype=np.complex)
 S_f = np.zeros(len(F_axis), dtype=np.complex)
 S_tk = np.zeros(len(F_axis), dtype=np.complex)

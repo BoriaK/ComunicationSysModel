@@ -16,9 +16,6 @@ m_q = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56, dtype=np.int64, endpoin
 
 Dta = m_i + 1j * m_q
 
-# BPSK
-# Dta = 2 * rng.integers(1, high=2, size=56, dtype=np.int64, endpoint=True) - 3
-
 GI = 0.8 * 1e-6  # 0.8[uS] Long GI
 Tsym = 3.2 * 1e-6  # 3.2 [uS] symbol time
 Delta_F = 1 / Tsym
