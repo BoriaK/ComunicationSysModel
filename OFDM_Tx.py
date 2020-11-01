@@ -143,7 +143,9 @@ def OFDM_Oscilator():
     # plt.suptitle('OFDM symbol with CP in time domain')
     # plt.show()
     ############################################################################
-    return
+
+    return S_t_w_CP_up
+
 
 def OFDM_FFT():
     S_t = np.zeros(len(F_axis), dtype=np.complex)
@@ -211,6 +213,8 @@ def OFDM_FFT():
     plt.grid()
     plt.show()
 
+    return S_t_w_CP_up
+
 
 def main():
     # OFDM_Oscilator()
@@ -218,7 +222,3 @@ def main():
 
 
 main()
-
-
-
-
