@@ -15,7 +15,7 @@ m_i = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56, dtype=np.int64, endpoin
 # quadrature data
 m_q = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56, dtype=np.int64, endpoint=True) - 1 - int(np.sqrt(M))
 
-Dta = m_i + 1j * m_q
+Tx_Dta = m_i + 1j * m_q
 
 GI = 0.8 * 1e-6  # 0.8[uS] Long GI
 Tsym = 3.2 * 1e-6  # 3.2 [uS] symbol time
@@ -37,7 +37,7 @@ for k in range(len(F_axis)):
         skip += 1
         S_f[k] = 0
     else:
-        S_f[k] = Dta[k - skip]
+        S_f[k] = Tx_Dta[k - skip]
 
 # prepare time domain signal using IFFT:
 S_t = np.fft.ifft(S_f, n=64)
@@ -78,33 +78,60 @@ t_w_CP = np.arange(0, Tsym + GI, 1 / F_samp)  # new Symbol time includes cyclic 
 # plt.grid()
 # plt.show()
 
+###########################next step#################################
 # D/A converter:
 # up sample by factor of 5
 # S_t_w_CP_up = signal.resample_poly(S_t_w_CP, 5, 1)
-(S_t_w_CP_up, t_w_CP_up) = signal.resample(S_t_w_CP, 5 * len(S_t_w_CP), t_w_CP, domain='time')
+# (S_t_w_CP_up32, t_w_CP_up32) = signal.resample(S_t_w_CP, 32 * len(S_t_w_CP), t_w_CP, domain='time')
 
 # plt.figure()
-# plt.plot(t_w_CP_up, S_t_w_CP_up)
+# plt.plot(t_w_CP_up32, S_t_w_CP_up32)
 # plt.xlabel('Time')
 # plt.ylabel('S(t) with GI')
-# plt.title('upsampled OFDM symbol with CP in time domain')
+# plt.title('Transmitted upsampled OFDM symbol with CP in time domain')
+# plt.grid()
+# plt.show()
+##########################################################################################
+
+
+# Rx
+
+################next step###########################################################
+# D/A
+# Rx_Sig_w_CP = S_t_w_CP_up32
+# Sig_dn_w_CP = signal.decimate(Rx_Sig_w_CP, 32, n=None, ftype='iir', axis=- 1, zero_phase=True)
+
+# plt.figure()
+# plt.plot(t_w_CP_up32, Rx_Sig_w_CP)
+# plt.xlabel('Time')
+# plt.ylabel('S(t) with GI')
+# plt.title('Recieved upsampled OFDM symbol with CP in time domain')
 # plt.grid()
 # plt.show()
 
-# Rx
-Rx_Sig_w_CP = S_t_w_CP_up
-Sig_dn_w_CP = signal.decimate(Rx_Sig_w_CP, 5, n=None, ftype='iir', axis=- 1, zero_phase=True)
+# plt.figure()
+# plt.plot(t_w_CP_up32, S_t_w_CP_up32, t_w_CP_up32, Rx_Sig_w_CP)
+# plt.xlabel('Time')
+# plt.ylabel('S(t) with GI')
+# plt.title('Tx upsampled OFDM symbol Rx upsampled OFDM symbol with CP in time domain')
+# plt.legend(['Tx s(t)', 'Rx s(t)'])
+# plt.grid()
+# plt.show()
+###################################################################################
+
+Rx_Sig_w_CP = S_t_w_CP
 
 # plt.figure()
-# plt.plot(t_w_CP, S_t_w_CP, t_w_CP, Sig_dn_w_CP)
+# plt.plot(t_w_CP, S_t_w_CP, t_w_CP, Rx_Sig_w_CP)
 # plt.xlabel('Time')
 # plt.ylabel('S(t) with GI')
 # plt.title('Tx OFDM symbol Rx OFDM symbol with CP in time domain')
+# plt.legend(['Tx s(t)', 'Rx s(t)'])
 # plt.grid()
 # plt.show()
 
 # Remove CP
-Sig_t = Sig_dn_w_CP[range(16, len(Sig_dn_w_CP))]
+Sig_t = Rx_Sig_w_CP[range(16, len(Rx_Sig_w_CP))]
 
 # plt.figure()
 # plt.plot(t, Sig_t)
@@ -114,16 +141,63 @@ Sig_t = Sig_dn_w_CP[range(16, len(Sig_dn_w_CP))]
 # plt.grid()
 # plt.show()
 
+# S/P Converter
+
 # FFT Block:
 Sig_f = np.fft.fft(Sig_t, n=64)
 
 # OFDM symbol in Frequency domain
-plt.figure()
-plt.plot(F_axis, np.abs(Sig_f))
-plt.xlabel('Frequency')
-plt.ylabel('S(f)')
-plt.grid()
-plt.title('Rx OFDM symbol in frequency domain')
-plt.show()
+# plt.figure()
+# plt.plot(F_axis, np.abs(Sig_f))
+# plt.xlabel('Frequency')
+# plt.ylabel('S(f)')
+# plt.grid()
+# plt.title('Rx OFDM symbol in frequency domain')
+# plt.show()
 
+# P/S converter
+Dta_vec = np.zeros(56, dtype=np.complex)
+Dta_I = np.zeros(56, dtype=np.float)
+Dta_Q = np.zeros(56, dtype=np.float)
 
+skip = 0
+for k in range(len(F_axis)):
+    if (k - len(F_axis) / 2) < -28 or (k - len(F_axis) / 2) == 0 or (k - len(F_axis) / 2) > 28:
+        skip += 1
+    else:
+        Dta_vec[k - skip] = S_f[k]
+
+print(Dta_vec)
+
+# Demapper - descision circle
+
+# the thresholds are {-2, 0, 2}
+
+ind_Re_3 = (np.real(Dta_vec) > 2)
+ind_Re_1 = (np.real(Dta_vec) > 0)
+ind_Re_min1 = (np.real(Dta_vec) < 0)
+ind_Re_min3 = (np.real(Dta_vec) < -2)
+ind_Im_3 = (np.imag(Dta_vec) > 2)
+ind_Im_1 = (np.imag(Dta_vec) > 0)
+ind_Im_min1 = (np.imag(Dta_vec) < 0)
+ind_Im_min3 = (np.imag(Dta_vec) < -2)
+
+Dta_I[np.logical_and(ind_Re_1, ind_Re_3)] = 3
+Dta_I[np.logical_and(ind_Re_1, ~ind_Re_3)] = 1
+Dta_I[np.logical_and(~ind_Re_min3, ind_Re_min1)] = -1
+Dta_I[np.logical_and(ind_Re_min3, ind_Re_min1)] = -3
+
+Dta_Q[np.logical_and(ind_Im_1, ind_Im_3)] = 3
+Dta_Q[np.logical_and(ind_Im_1, ~ind_Im_3)] = 1
+Dta_Q[np.logical_and(~ind_Im_min3, ind_Im_min1)] = -1
+Dta_Q[np.logical_and(ind_Im_min3, ind_Im_min1)] = -3
+
+Rx_Dta = Dta_I + 1j * Dta_Q
+
+print(Dta_vec)
+
+# performance check:
+correct_Symbols = (Tx_Dta == Rx_Dta)*1
+SER = 1 - np.sum(correct_Symbols)/len(Rx_Dta)
+
+print(SER)

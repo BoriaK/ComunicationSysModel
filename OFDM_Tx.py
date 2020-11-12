@@ -104,10 +104,10 @@ def OFDM_Oscilator():
     # D/A converter:
     # up sample by factor of 5
     # S_t_w_CP_up = signal.resample_poly(S_t_w_CP, 5, 1)
-    (S_t_w_CP_up, t_w_CP_up) = signal.resample(S_t_w_CP, 5 * len(S_t_w_CP), t_w_CP, domain='time')
+    (S_t_w_CP_up32, t_w_CP_up32) = signal.resample(S_t_w_CP, 32 * len(S_t_w_CP), t_w_CP, domain='time')
 
     plt.figure()
-    plt.plot(t_w_CP_up, S_t_w_CP_up)
+    plt.plot(t_w_CP_up32, S_t_w_CP_up32)
     plt.xlabel('Time')
     plt.ylabel('S(t) with GI')
     plt.title('upsampled OFDM signal with CP in time domain')
@@ -144,7 +144,7 @@ def OFDM_Oscilator():
     # plt.show()
     ############################################################################
 
-    return S_t_w_CP_up
+    return S_t_w_CP_up32
 
 
 def OFDM_FFT():
@@ -203,17 +203,17 @@ def OFDM_FFT():
     # D/A converter:
     # up sample by factor of 5
     # S_t_w_CP_up = signal.resample_poly(S_t_w_CP, 5, 1)
-    (S_t_w_CP_up, t_w_CP_up) = signal.resample(S_t_w_CP, 5 * len(S_t_w_CP), t_w_CP, domain='time')
+    (S_t_w_CP_up32, t_w_CP_up32) = signal.resample(S_t_w_CP, 32 * len(S_t_w_CP), t_w_CP, domain='time')
 
     plt.figure()
-    plt.plot(t_w_CP_up, S_t_w_CP_up)
+    plt.plot(t_w_CP_up32, S_t_w_CP_up32)
     plt.xlabel('Time')
     plt.ylabel('S(t) with GI')
     plt.title('upsampled OFDM symbol with CP in time domain')
     plt.grid()
     plt.show()
 
-    return S_t_w_CP_up
+    return S_t_w_CP_up32
 
 
 def main():
