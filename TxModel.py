@@ -39,7 +39,7 @@ def TxMod(M, n):
     # upsampling
     m_upS = signal.resample(m, 2 * n)  # upsampled signal by factor of 2 (1 samples per symbol)
     m_SRRC = np.convolve(m_upS, g_SRRC, mode='same')  # add a physical shape to the pulse
-    m_SRRC = signal.resample(m_SRRC, 16 * n)  # upsample the waveform to 16 samples per symbol
+    m_SRRC = signal.resample(m_SRRC, 16 * n)  # upsample the waveform to 32 samples per symbol
 
     plt.plot(m_SRRC[range(8 * 16)])  # print 8 symbols (in time domain)
     plt.show()

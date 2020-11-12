@@ -42,22 +42,22 @@ for k in range(len(F_axis)):
 S_t = np.fft.ifft(S_f, n=64)
 
 # OFDM symbol in Frequency domain
-plt.figure()
-plt.plot(F_axis, np.abs(S_f))
-plt.xlabel('Frequency')
-plt.ylabel('S(f)')
-plt.grid()
-plt.title('OFDM symbol in frequency domain')
-plt.show()
+# plt.figure()
+# plt.plot(F_axis, np.abs(S_f))
+# plt.xlabel('Frequency')
+# plt.ylabel('S(f)')
+# plt.grid()
+# plt.title('OFDM symbol in frequency domain')
+# plt.show()
 
 # OFDM symbol in Time domain
-plt.figure()
-plt.plot(t, S_t)
-plt.xlabel('Time')
-plt.ylabel('S(t)')
-plt.grid()
-plt.title('OFDM symbol in time domain')
-plt.show()
+# plt.figure()
+# plt.plot(t, S_t)
+# plt.xlabel('Time')
+# plt.ylabel('S(t)')
+# plt.grid()
+# plt.title('OFDM symbol in time domain')
+# plt.show()
 
 # Parallel to serial: ?
 
@@ -69,24 +69,34 @@ S_t_w_CP[range(16, len(S_t_w_CP))] = S_t
 
 t_w_CP = np.arange(0, Tsym+GI, 1 / F_samp)  # new Symbol time includes cyclic prefix
 
-plt.figure()
-plt.plot(t_w_CP, S_t_w_CP)
-plt.xlabel('Time')
-plt.ylabel('S(t) with GI')
-plt.title('OFDM symbol with CP in time domain')
-plt.grid()
-plt.show()
+# plt.figure()
+# plt.plot(t_w_CP, S_t_w_CP)
+# plt.xlabel('Time')
+# plt.ylabel('S(t) with GI')
+# plt.title('OFDM symbol with CP in time domain')
+# plt.grid()
+# plt.show()
 
 # D/A converter:
-# up sample by factor of 5
-# S_t_w_CP_up = signal.resample_poly(S_t_w_CP, 5, 1)
-(S_t_w_CP_up, S_t_w_CP) = signal.resample(S_t_w_CP, 5*len(S_t_w_CP), t_w_CP, domain='time')
+# pulse shaping
+N_samp = 2
+alpha = 0.25  # roll off factor
+Ts = Tsym + GI
+Fs = F_samp  # 64 samples per symbol
+g_SRRC = np.sqrt(2) * rrcosfilter(N_samp, alpha, Ts, Fs)[1]
+# up sample by factor of 2
+# S_t_w_CP_up = signal.resample_poly(S_t_w_CP, 2, 1)
+(S_t_w_CP_up, t_w_CP_up) = signal.resample(S_t_w_CP, 2*len(S_t_w_CP), t_w_CP, domain='time')
+S_t_w_CP_SRRC = np.convolve(S_t_w_CP_up, g_SRRC, mode='same')  # add a physical shape to the pulse
+(PHY_S_t_w_CP_SRRC, t_w_CP_up_PHY) = signal.resample(S_t_w_CP_SRRC, 16*len(S_t_w_CP_SRRC), t_w_CP_up, domain='time')
+
 
 plt.figure()
-plt.plot(S_t_w_CP, S_t_w_CP_up)
+plt.plot(t_w_CP, S_t_w_CP, t_w_CP_up, S_t_w_CP_up, t_w_CP_up_PHY, PHY_S_t_w_CP_SRRC)
 plt.xlabel('Time')
 plt.ylabel('S(t) with GI')
-plt.title('upsampled OFDM symbol with CP in time domain')
+plt.title('upsampled OFDM symbol with CP and SRRC pulse in time domain')
+plt.legend(['S(t)', 'up-sampled S(t)', 'up-sampled S(t) SRRC'])
 plt.grid()
 plt.show()
 
