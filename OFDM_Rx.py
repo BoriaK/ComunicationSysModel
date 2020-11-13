@@ -119,7 +119,7 @@ t_w_CP = np.arange(0, Tsym + GI, 1 / F_samp)  # new Symbol time includes cyclic 
 # plt.show()
 ###################################################################################
 
-Rx_Sig_w_CP = S_t_w_CP
+Rx_Sig_w_CP = S_t_w_CP  # Received signal without noise
 
 # plt.figure()
 # plt.plot(t_w_CP, S_t_w_CP, t_w_CP, Rx_Sig_w_CP)
@@ -130,74 +130,107 @@ Rx_Sig_w_CP = S_t_w_CP
 # plt.grid()
 # plt.show()
 
-# Remove CP
-Sig_t = Rx_Sig_w_CP[range(16, len(Rx_Sig_w_CP))]
+# Add noise Discrete channel
+Eb_Discrete = 1
+gamma_b_dB_Max = 20
+SER_vec = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
+for gamma_b_dB in range(gamma_b_dB_Max + 1):
+    gamma_b_L = 10 ** (0.1 * gamma_b_dB)
+    N0_Discrete = Eb_Discrete / gamma_b_L
+    Ni_Discrete = np.sqrt(N0_Discrete / 2) * np.random.normal(loc=0, scale=1,
+                                                              size=len(S_t_w_CP))  # loc = mean, scale = STDV
+    Nq_Discrete = np.sqrt(N0_Discrete / 2) * np.random.normal(loc=0, scale=1,
+                                                              size=len(S_t_w_CP))  # loc = mean, scale = STDV
+    N_Discrete = Ni_Discrete + 1j * Nq_Discrete
 
-# plt.figure()
-# plt.plot(t, Sig_t)
-# plt.xlabel('Time')
-# plt.ylabel('S(t)')
-# plt.title('Rx OFDM symbol in time domain')
-# plt.grid()
-# plt.show()
+    R_t_Disc_w_CP = Rx_Sig_w_CP + N_Discrete
 
-# S/P Converter
+    # plt.figure()
+    # plt.plot(t_w_CP, S_t_w_CP, t_w_CP, R_t_Disc_w_CP)
+    # plt.xlabel('Time')
+    # plt.ylabel('S(t) with GI')
+    # plt.title('Tx OFDM symbol Noisy Rx OFDM symbol SNR = ' + str(gamma_b_dB) + ' with CP in time domain')
+    # plt.legend(['Tx s(t)', 'Rx R(t)'])
+    # plt.grid()
+    # plt.show()
 
-# FFT Block:
-Sig_f = np.fft.fft(Sig_t, n=64)
+    # Remove CP
+    Sig_t = R_t_Disc_w_CP[range(16, len(R_t_Disc_w_CP))]
 
-# OFDM symbol in Frequency domain
-# plt.figure()
-# plt.plot(F_axis, np.abs(Sig_f))
-# plt.xlabel('Frequency')
-# plt.ylabel('S(f)')
-# plt.grid()
-# plt.title('Rx OFDM symbol in frequency domain')
-# plt.show()
+    # plt.figure()
+    # plt.plot(t, Sig_t)
+    # plt.xlabel('Time')
+    # plt.ylabel('S(t)')
+    # plt.title('Rx OFDM symbol in time domain')
+    # plt.grid()
+    # plt.show()
 
-# P/S converter
-Dta_vec = np.zeros(56, dtype=np.complex)
-Dta_I = np.zeros(56, dtype=np.float)
-Dta_Q = np.zeros(56, dtype=np.float)
+    # S/P Converter
 
-skip = 0
-for k in range(len(F_axis)):
-    if (k - len(F_axis) / 2) < -28 or (k - len(F_axis) / 2) == 0 or (k - len(F_axis) / 2) > 28:
-        skip += 1
-    else:
-        Dta_vec[k - skip] = S_f[k]
+    # FFT Block:
+    Sig_f = np.fft.fft(Sig_t, n=64)
 
-print(Dta_vec)
+    # OFDM symbol in Frequency domain
+    # plt.figure()
+    # plt.plot(F_axis, np.abs(Sig_f))
+    # plt.xlabel('Frequency')
+    # plt.ylabel('S(f)')
+    # plt.grid()
+    # plt.title('Rx OFDM symbol in frequency domain')
+    # plt.show()
 
-# Demapper - descision circle
+    # P/S converter
+    Dta_vec = np.zeros(56, dtype=np.complex)
+    Dta_I = np.zeros(56, dtype=np.float)
+    Dta_Q = np.zeros(56, dtype=np.float)
 
-# the thresholds are {-2, 0, 2}
+    skip = 0
+    for k in range(len(F_axis)):
+        if (k - len(F_axis) / 2) < -28 or (k - len(F_axis) / 2) == 0 or (k - len(F_axis) / 2) > 28:
+            skip += 1
+        else:
+            Dta_vec[k - skip] = Sig_f[k]
 
-ind_Re_3 = (np.real(Dta_vec) > 2)
-ind_Re_1 = (np.real(Dta_vec) > 0)
-ind_Re_min1 = (np.real(Dta_vec) < 0)
-ind_Re_min3 = (np.real(Dta_vec) < -2)
-ind_Im_3 = (np.imag(Dta_vec) > 2)
-ind_Im_1 = (np.imag(Dta_vec) > 0)
-ind_Im_min1 = (np.imag(Dta_vec) < 0)
-ind_Im_min3 = (np.imag(Dta_vec) < -2)
+    # print(Dta_vec)
 
-Dta_I[np.logical_and(ind_Re_1, ind_Re_3)] = 3
-Dta_I[np.logical_and(ind_Re_1, ~ind_Re_3)] = 1
-Dta_I[np.logical_and(~ind_Re_min3, ind_Re_min1)] = -1
-Dta_I[np.logical_and(ind_Re_min3, ind_Re_min1)] = -3
+    # Demapper - descision circle
 
-Dta_Q[np.logical_and(ind_Im_1, ind_Im_3)] = 3
-Dta_Q[np.logical_and(ind_Im_1, ~ind_Im_3)] = 1
-Dta_Q[np.logical_and(~ind_Im_min3, ind_Im_min1)] = -1
-Dta_Q[np.logical_and(ind_Im_min3, ind_Im_min1)] = -3
+    # the thresholds are {-2, 0, 2}
 
-Rx_Dta = Dta_I + 1j * Dta_Q
+    ind_Re_3 = (np.real(Dta_vec) > 2)
+    ind_Re_1 = (np.real(Dta_vec) > 0)
+    ind_Re_min1 = (np.real(Dta_vec) < 0)
+    ind_Re_min3 = (np.real(Dta_vec) < -2)
+    ind_Im_3 = (np.imag(Dta_vec) > 2)
+    ind_Im_1 = (np.imag(Dta_vec) > 0)
+    ind_Im_min1 = (np.imag(Dta_vec) < 0)
+    ind_Im_min3 = (np.imag(Dta_vec) < -2)
 
-print(Dta_vec)
+    Dta_I[np.logical_and(ind_Re_1, ind_Re_3)] = 3
+    Dta_I[np.logical_and(ind_Re_1, ~ind_Re_3)] = 1
+    Dta_I[np.logical_and(~ind_Re_min3, ind_Re_min1)] = -1
+    Dta_I[np.logical_and(ind_Re_min3, ind_Re_min1)] = -3
 
-# performance check:
-correct_Symbols = (Tx_Dta == Rx_Dta)*1
-SER = 1 - np.sum(correct_Symbols)/len(Rx_Dta)
+    Dta_Q[np.logical_and(ind_Im_1, ind_Im_3)] = 3
+    Dta_Q[np.logical_and(ind_Im_1, ~ind_Im_3)] = 1
+    Dta_Q[np.logical_and(~ind_Im_min3, ind_Im_min1)] = -1
+    Dta_Q[np.logical_and(ind_Im_min3, ind_Im_min1)] = -3
 
-print(SER)
+    Rx_Dta = Dta_I + 1j * Dta_Q
+
+    # print(Dta_vec)
+
+    # performance check:
+    correct_Symbols = (Tx_Dta == Rx_Dta) * 1
+    SER = 1 - np.sum(correct_Symbols) / len(Rx_Dta)
+
+    # print(SER)
+    SER_vec[gamma_b_dB] = SER
+
+print(SER_vec)
+
+# plot SER as function of SNR/bit
+plt.semilogy(range(gamma_b_dB_Max + 1), SER_vec)
+plt.grid()
+plt.title('SER as function of SNR/bit')
+plt.show()
