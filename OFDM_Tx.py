@@ -18,17 +18,17 @@ m_q = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56*Num_Dta_chnk, dtype=np.i
 
 Dta_Tx = m_i + 1j * m_q
 
-GI = 0.8 * 1e-6  # 0.8[uS] Long GI
-Tsym = 3.2 * 1e-6  # 3.2 [uS] symbol time
-Delta_F = 1 / Tsym
-F = 1 / (Tsym + GI)  # analog Frequency
-F_samp = 20 * 1e6  # sample frquency 20MHz
-
-t_sym = np.arange(0, Tsym, 1 / F_samp)
-F_axis = np.arange(-F_samp / 2, F_samp / 2, F_samp / len(t_sym))
-
 
 def OFDM_Oscilator_Tx():
+    GI = 0.8 * 1e-6  # 0.8[uS] Long GI
+    Tsym = 3.2 * 1e-6  # 3.2 [uS] symbol time
+    Delta_F = 1 / Tsym
+    F = 1 / (Tsym + GI)  # analog Frequency
+    F_samp = 20 * 1e6  # sample frquency 20MHz
+
+    t_sym = np.arange(0, Tsym, 1 / F_samp)
+    F_axis = np.arange(-F_samp / 2, F_samp / 2, F_samp / len(t_sym))
+
     CW_tk = np.zeros((len(F_axis), len(t)), dtype=np.complex)
     S_tk = np.zeros((len(F_axis), len(t)), dtype=np.complex)
 
@@ -149,11 +149,21 @@ def OFDM_Oscilator_Tx():
     return S_t_w_CP_up32
 
 
-def OFDM_FFT_Tx():
+def OFDM_FFT_Tx(input_data):
+    GI = 0.8 * 1e-6  # 0.8[uS] Long GI
+    Tsym = 3.2 * 1e-6  # 3.2 [uS] symbol time
+    Delta_F = 1 / Tsym
+    F = 1 / (Tsym + GI)  # analog Frequency
+    F_samp = 20 * 1e6  # sample frquency 20MHz
+
+    t_sym = np.arange(0, Tsym, 1 / F_samp)
+    F_axis = np.arange(-F_samp / 2, F_samp / 2, F_samp / len(t_sym))
+
     S_t_w_CP = np.zeros((len(t_sym) + 16) * Num_Dta_chnk, dtype=np.complex)
-    S_f_chnk = np.zeros(len(F_axis), dtype=np.complex)
+    # S_f = np.zeros((Num_Dta_chnk, len(F_axis)), dtype=np.complex)
     for chnk in range(Num_Dta_chnk):
-        Dta_Tx_chnk = Dta_Tx[range(chnk * 56, (chnk+1) * 56)]
+        S_f_chnk = np.zeros(len(F_axis), dtype=np.complex)
+        Dta_Tx_chnk = input_data[range(chnk * 56, (chnk+1) * 56)]
         # prepare the data in frequency domain:
         skip = 0
         for k in range(len(F_axis)):
@@ -163,6 +173,7 @@ def OFDM_FFT_Tx():
             else:
                 S_f_chnk[k] = Dta_Tx_chnk[k - skip]
 
+        # S_f[chnk] = S_f_chnk
         # prepare time domain signal using IFFT:
         S_t_chnk = np.fft.ifft(S_f_chnk, n=64)
 
@@ -216,14 +227,14 @@ def OFDM_FFT_Tx():
         ###################################################################################################
         S_t_w_CP[range(chnk*len(S_t_chnk_w_CP), (chnk+1)*len(S_t_chnk_w_CP))] = S_t_chnk_w_CP
 
-    t_w_CP = np.arange(0, (Tsym + GI) * Num_Dta_chnk, 1 / F_samp)
-    plt.figure()
-    plt.plot(t_w_CP, S_t_w_CP)
-    plt.xlabel('Time')
-    plt.ylabel('S(t) with GI')
-    plt.title('OFDM signal with CP in time domain')
-    plt.grid()
-    plt.show()
+    # t_w_CP = np.arange(0, (Tsym + GI) * Num_Dta_chnk, 1 / F_samp)
+    # plt.figure()
+    # plt.plot(t_w_CP, S_t_w_CP)
+    # plt.xlabel('Time')
+    # plt.ylabel('S(t) with GI')
+    # plt.title('OFDM signal with CP in time domain')
+    # plt.grid()
+    # plt.show()
 
     return S_t_w_CP
 
@@ -231,7 +242,7 @@ def OFDM_FFT_Tx():
 
 def main():
     # OFDM_Oscilator_Tx()
-    OFDM_FFT_Tx()
+    OFDM_FFT_Tx(Dta_Tx)
 
 
 main()
