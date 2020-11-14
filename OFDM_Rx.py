@@ -70,6 +70,7 @@ S_t_w_CP[range(16, len(S_t_w_CP))] = S_t
 
 t_w_CP = np.arange(0, Tsym + GI, 1 / F_samp)  # new Symbol time includes cyclic prefix
 
+
 # plt.figure()
 # plt.plot(t_w_CP, S_t_w_CP)
 # plt.xlabel('Time')
@@ -95,7 +96,7 @@ t_w_CP = np.arange(0, Tsym + GI, 1 / F_samp)  # new Symbol time includes cyclic 
 
 
 # Rx
-def OFDM_FFT_Rx(input_sig, input_time, tx_sta):
+def OFDM_FFT_Rx():
     ################next step###########################################################
     # D/A
     # Rx_Sig_w_CP = S_t_w_CP_up32
@@ -119,8 +120,7 @@ def OFDM_FFT_Rx(input_sig, input_time, tx_sta):
     # plt.show()
     ###################################################################################
 
-    # Rx_Sig_w_CP = S_t_w_CP  # Received signal without noise
-    Rx_Sig_w_CP = input_sig
+    Rx_Sig_w_CP = S_t_w_CP  # Received signal without noise
 
     # plt.figure()
     # plt.plot(t_w_CP, S_t_w_CP, t_w_CP, Rx_Sig_w_CP)
@@ -235,4 +235,12 @@ def OFDM_FFT_Rx(input_sig, input_time, tx_sta):
     plt.grid()
     plt.title('SER as function of SNR/bit')
     plt.show()
+
+
+def main():
+    OFDM_FFT_Rx()
+
+
+main()
+
 

@@ -26,7 +26,7 @@ t = np.arange(0, Tsym, 1 / F_samp)
 F_axis = np.arange(-F_samp / 2, F_samp / 2, F_samp / len(t))
 
 
-def OFDM_Oscilator():
+def OFDM_Oscilator_Tx():
     CW_tk = np.zeros((len(F_axis), len(t)), dtype=np.complex)
     S_tk = np.zeros((len(F_axis), len(t)), dtype=np.complex)
 
@@ -147,7 +147,7 @@ def OFDM_Oscilator():
     return S_t_w_CP_up32
 
 
-def OFDM_FFT():
+def OFDM_FFT_Tx():
     S_t = np.zeros(len(F_axis), dtype=np.complex)
     S_f = np.zeros(len(F_axis), dtype=np.complex)
     S_tk = np.zeros(len(F_axis), dtype=np.complex)
@@ -217,8 +217,8 @@ def OFDM_FFT():
 
 
 def main():
-    # OFDM_Oscilator()
-    OFDM_FFT()
+    # OFDM_Oscilator_Tx()
+    OFDM_FFT_Tx()
 
 
 main()
