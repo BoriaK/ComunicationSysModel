@@ -5,7 +5,7 @@ from scipy import signal
 import math
 
 # Tx
-Num_Dta_chnk = 10  # number of data chunks
+Num_Dta_chnk = int(1e3)  # number of data chunks
 # random 56 symbols of data per packet
 rng = np.random.default_rng()
 
@@ -241,10 +241,12 @@ def OFDM_FFT_Rx():
         # print(SER)
         SER_vec[gamma_b_dB] = SER
 
-    print(SER_vec)
+    # print(SER_vec)
 
     # plot SER as function of SNR/bit
     plt.semilogy(range(gamma_b_dB_Max + 1), SER_vec)
+    plt.xlabel('gamma_b[dB]')
+    plt.ylabel('SER')
     plt.grid()
     plt.title('SER as function of SNR/bit')
     plt.show()

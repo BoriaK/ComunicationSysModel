@@ -4,7 +4,7 @@ from commpy.filters import rrcosfilter
 from scipy import signal
 import math
 
-Num_Dta_chnk = 100  # number of data chunks
+Num_Dta_chnk = int(1e3)  # number of data chunks
 # random 56 symbols of data per packet
 rng = np.random.default_rng()
 
@@ -153,7 +153,7 @@ def OFDM_FFT_Rx(recieved_signal, original_data):
 
     # Add noise Discrete channel
     Eb_Discrete = 1
-    gamma_b_dB_Max = 20
+    gamma_b_dB_Max = 30
     SER_vec = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
     for gamma_b_dB in range(gamma_b_dB_Max + 1):
         # for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):    # for debug for single SNR/bit value
