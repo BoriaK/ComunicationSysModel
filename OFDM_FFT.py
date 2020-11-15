@@ -7,7 +7,8 @@ import math
 Num_Dta_chnk = int(1e3)  # number of data chunks
 # random 56 symbols of data per packet
 rng = np.random.default_rng()
-
+# lookup table for Symbol energy discrete model:
+Es_vec = {'2': 1, '4': 2, '16': 10}
 # 16QAM
 M = 16
 # infase data
@@ -127,7 +128,7 @@ def OFDM_FFT_Rx(recieved_signal, original_data):
     Dta_Q = np.zeros(56 * Num_Dta_chnk, dtype=np.float)
 
     ################next step###########################################################
-    # D/A
+    # A/D
     # Rx_Sig_w_CP = S_t_w_CP_up32
     # Sig_dn_w_CP = signal.decimate(Rx_Sig_w_CP, 32, n=None, ftype='iir', axis=- 1, zero_phase=True)
 
@@ -152,11 +153,12 @@ def OFDM_FFT_Rx(recieved_signal, original_data):
     Rx_Sig_w_CP = recieved_signal  # Received signal without noise
 
     # Add noise Discrete channel
-    Eb_Discrete = 1
+    Es_Discrete = Es_vec[str(M)]
+    Eb_Discrete = Es_Discrete / np.log2(M)
     gamma_b_dB_Max = 30
     SER_vec = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
     for gamma_b_dB in range(gamma_b_dB_Max + 1):
-        # for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):    # for debug for single SNR/bit value
+    # for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):    # for debug for single SNR/bit value
         gamma_b_L = 10 ** (0.1 * gamma_b_dB)
         N0_Discrete = Eb_Discrete / gamma_b_L
         Ni_Discrete = np.sqrt(N0_Discrete / 2) * np.random.normal(loc=0, scale=1,
@@ -215,6 +217,16 @@ def OFDM_FFT_Rx(recieved_signal, original_data):
                 # print(Dta_vec_chnk)
 
             Dta_vec[range(chnk * len(Dta_vec_chnk), (chnk + 1) * len(Dta_vec_chnk))] = Dta_vec_chnk
+
+        # constalation:
+        plt.figure()
+        plt.scatter(np.real(Dta_vec), np.imag(Dta_vec))
+        plt.xlabel('Infase')
+        plt.ylabel('Quadrature')
+        plt.title('Constellation of Rx OFDM signal with SNR = ' + str(gamma_b_dB))
+        # plt.legend(['Tx s(t)', 'Rx R(t)'])
+        plt.grid()
+        plt.show()
 
         # Demapper - descision circle
 
