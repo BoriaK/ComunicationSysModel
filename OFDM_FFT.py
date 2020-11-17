@@ -3,8 +3,9 @@ from matplotlib import pyplot as plt
 from commpy.filters import rrcosfilter
 from scipy import signal
 import math
+from scatterPlot import scatter
 
-Num_Dta_chnk = int(1e3)  # number of data chunks
+Num_Dta_chnk = int(100*1e3)  # number of data chunks
 # random 56 symbols of data per packet
 rng = np.random.default_rng()
 # lookup table for Symbol energy discrete model:
@@ -219,14 +220,7 @@ def OFDM_FFT_Rx(recieved_signal, original_data):
             Dta_vec[range(chnk * len(Dta_vec_chnk), (chnk + 1) * len(Dta_vec_chnk))] = Dta_vec_chnk
 
         # constalation:
-        plt.figure()
-        plt.scatter(np.real(Dta_vec), np.imag(Dta_vec))
-        plt.xlabel('Infase')
-        plt.ylabel('Quadrature')
-        plt.title('Constellation of Rx OFDM signal with SNR = ' + str(gamma_b_dB))
-        # plt.legend(['Tx s(t)', 'Rx R(t)'])
-        plt.grid()
-        plt.show()
+        scatter(Dta_vec, M, gamma_b_dB)
 
         # Demapper - descision circle
 
