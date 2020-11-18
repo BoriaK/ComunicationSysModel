@@ -158,6 +158,7 @@ def OFDM_FFT_Rx(recieved_signal, original_data):
     Eb_Discrete = Es_Discrete / np.log2(M)
     gamma_b_dB_Max = 30
     SER_vec = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
+    SER_analitic = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
     for gamma_b_dB in range(gamma_b_dB_Max + 1):
     # for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):    # for debug for single SNR/bit value
         gamma_b_L = 10 ** (0.1 * gamma_b_dB)
@@ -220,7 +221,8 @@ def OFDM_FFT_Rx(recieved_signal, original_data):
             Dta_vec[range(chnk * len(Dta_vec_chnk), (chnk + 1) * len(Dta_vec_chnk))] = Dta_vec_chnk
 
         # constalation:
-        scatter(Dta_vec, M, gamma_b_dB)
+        # if gamma_b_dB == 30:
+        #     scatter(Dta_vec, M, gamma_b_dB)
 
         # Demapper - descision circle
 
@@ -256,15 +258,17 @@ def OFDM_FFT_Rx(recieved_signal, original_data):
 
         # print(SER)
         SER_vec[gamma_b_dB] = SER
+        SER_analitic[gamma_b_dB] = (3/2)*math.erfc(np.sqrt(0.1*gamma_b_L))
 
     print(SER_vec)
 
     # plot SER as function of SNR/bit
-    plt.semilogy(range(gamma_b_dB_Max + 1), SER_vec)
+    plt.semilogy(range(gamma_b_dB_Max + 1), SER_vec, range(gamma_b_dB_Max + 1), SER_analitic)
     plt.xlabel('gamma_b[dB]')
     plt.ylabel('SER')
     plt.grid()
     plt.title('SER as function of SNR/bit')
+    plt.figlegend(['SER Numeric', 'SER Analytic'])
     plt.show()
 
 
