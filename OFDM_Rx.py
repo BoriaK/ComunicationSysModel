@@ -108,7 +108,7 @@ def OFDM_FFT_Rx(received_signal, original_data, transmitted_signal):
             # plt.show()
 
             # FFT Block:
-            Sig_f_chnk = np.fft.fft(Sig_t_chnk, n=64)
+            Sig_f_chnk = np.fft.fftshift(np.fft.fft(Sig_t_chnk, n=64))
 
             # OFDM symbol in Frequency domain
             # plt.figure()

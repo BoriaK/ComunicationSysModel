@@ -221,8 +221,8 @@ def OFDM_FFT_Rx(recieved_signal, original_data):
             Dta_vec[range(chnk * len(Dta_vec_chnk), (chnk + 1) * len(Dta_vec_chnk))] = Dta_vec_chnk
 
         # constalation:
-        # if gamma_b_dB == 30:
-        #     scatter(Dta_vec, M, gamma_b_dB)
+        if gamma_b_dB == 30:
+            scatter(Dta_vec, M, gamma_b_dB)
 
         # Demapper - descision circle
 
@@ -258,7 +258,7 @@ def OFDM_FFT_Rx(recieved_signal, original_data):
 
         # print(SER)
         SER_vec[gamma_b_dB] = SER
-        SER_analitic[gamma_b_dB] = (3/2)*math.erfc(np.sqrt(0.1*gamma_b_L))
+        # SER_analitic[gamma_b_dB] = (3/2)*math.erfc(np.sqrt(0.1*gamma_b_L))
 
     print(SER_vec)
 

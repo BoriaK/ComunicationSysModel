@@ -3,14 +3,22 @@ from matplotlib import pyplot as plt
 from scipy import signal
 
 
-A = [1, 1, -1, 1, 1, -1, -1, 1, -1, 1]
+A = np.array([1, 1, -1, 1, 1, -1, -1, 1, -1, 1])
 t = np.arange(start=0, stop=10, step=1)
 print(A)
 
-(A_up, t_up) = signal.resample(A, 4 * len(A), t, domain='time')
-print(A_up)
+B = np.zeros(2*len(A), dtype=np.float)
+B[::2] = A  # spacing A with zeros
 
-A_dn = signal.decimate(A_up, 4, n=None, ftype='iir', axis=- 1, zero_phase=True)
+h = np.ones(2, dtype=np.float)
+
+A_up_ZOH = signal.lfilter(h, 1, B)
+t_up_ZOH = np.arange(start=0, stop=10, step=0.5)
+
+# (A_up, t_up) = signal.resample(A, 4 * len(A), t, domain='time')
+# print(A_up)
+
+A_dn = A_up_ZOH[::2]
 
 plt.figure()
 # plt.plot(t, A, t_up, A_up, t, A_dn)

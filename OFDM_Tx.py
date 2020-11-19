@@ -175,7 +175,7 @@ def OFDM_FFT_Tx(input_data):
 
         # S_f[chnk] = S_f_chnk
         # prepare time domain signal using IFFT:
-        S_t_chnk = np.fft.ifft(S_f_chnk, n=64)
+        S_t_chnk = np.fft.ifft(np.fft.fftshift(S_f_chnk), n=64)
 
         # single OFDM symbol in Frequency domain
         # plt.figure()
@@ -188,7 +188,7 @@ def OFDM_FFT_Tx(input_data):
 
         # single OFDM symbol in Time domain
         # plt.figure()
-        # plt.plot(t, S_t_chnk)
+        # plt.plot(t_sym, S_t_chnk)
         # plt.xlabel('Time')
         # plt.ylabel('S(t)')
         # plt.grid()
@@ -205,13 +205,13 @@ def OFDM_FFT_Tx(input_data):
 
         t_sym_w_CP = np.arange(0, Tsym + GI, 1 / F_samp)  # new Symbol time includes cyclic prefix
 
-        # plt.figure()
-        # plt.plot(t_sym_w_CP, S_t_chnk_w_CP)
-        # plt.xlabel('Time')
-        # plt.ylabel('S(t) with GI')
-        # plt.title('single OFDM symbol with CP in time domain')
-        # plt.grid()
-        # plt.show()
+        plt.figure()
+        plt.plot(t_sym_w_CP, S_t_chnk_w_CP)
+        plt.xlabel('Time')
+        plt.ylabel('S(t) with GI')
+        plt.title('single OFDM symbol with CP in time domain')
+        plt.grid()
+        plt.show()
 
         S_t_w_CP[range(chnk*len(S_t_chnk_w_CP), (chnk+1)*len(S_t_chnk_w_CP))] = S_t_chnk_w_CP
 
