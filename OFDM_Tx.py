@@ -5,7 +5,7 @@ from scipy import signal
 import math
 
 
-Num_Dta_chnk = 10  # number of data chunks
+Num_Dta_chnk = int(1e3)  # number of data chunks
 # random 56 symbols of data per packet
 rng = np.random.default_rng()
 
@@ -213,21 +213,9 @@ def OFDM_FFT_Tx(input_data):
         # plt.grid()
         # plt.show()
 
-        ######################## D/A converter:#############################################################
-        # up sample by factor of 32
-        # (S_t_w_CP_up32, t_w_CP_up32) = signal.resample(S_t_w_CP, 32 * len(S_t_w_CP), t_w_CP, domain='time')
-        #
-        # plt.figure()
-        # plt.plot(t_w_CP_up32, S_t_w_CP_up32)
-        # plt.xlabel('Time')
-        # plt.ylabel('S(t) with GI')
-        # plt.title('upsampled OFDM symbol with CP in time domain')
-        # plt.grid()
-        # plt.show()
-        ###################################################################################################
         S_t_w_CP[range(chnk*len(S_t_chnk_w_CP), (chnk+1)*len(S_t_chnk_w_CP))] = S_t_chnk_w_CP
 
-    # t_w_CP = np.arange(0, (Tsym + GI) * Num_Dta_chnk, 1 / F_samp)
+    t_w_CP = np.arange(0, (Tsym + GI) * Num_Dta_chnk, 1 / F_samp)
     # plt.figure()
     # plt.plot(t_w_CP, S_t_w_CP)
     # plt.xlabel('Time')
@@ -236,7 +224,21 @@ def OFDM_FFT_Tx(input_data):
     # plt.grid()
     # plt.show()
 
-    return S_t_w_CP
+    ######################## D/A converter:#############################################################
+    # up sample by factor of 32
+    (S_t_w_CP_up32, t_w_CP_up32) = signal.resample(S_t_w_CP, 32 * len(S_t_w_CP), t_w_CP, domain='time')
+
+    plt.figure()
+    plt.plot(t_w_CP[range(int(len(t_w_CP)/Num_Dta_chnk))], S_t_w_CP[range(int(len(S_t_w_CP)/Num_Dta_chnk))], t_w_CP_up32[range(int(len(t_w_CP_up32)/Num_Dta_chnk))], S_t_w_CP_up32[range(int(len(S_t_w_CP_up32)/Num_Dta_chnk))])
+    plt.xlabel('Time')
+    plt.ylabel('S(t) with GI')
+    plt.title('regular vs upsampled OFDM symbol with CP in time domain')
+    plt.grid()
+    plt.legend(['s(t)', 'upsampled s(t)'])
+    plt.show()
+    ###################################################################################################
+
+    return S_t_w_CP_up32, S_t_w_CP
 
 
 
@@ -245,4 +247,4 @@ def main():
     OFDM_FFT_Tx(Dta_Tx)
 
 
-main()
+# main()
