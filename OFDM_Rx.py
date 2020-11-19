@@ -42,13 +42,13 @@ def OFDM_FFT_Rx(received_signal, original_data, transmitted_signal):
     if len(Rx_Sig_w_CP) > len(t_w_CP):
         ################next step###########################################################
         # A/D
-        plt.figure()
-        plt.plot(Rx_Sig_w_CP[range(int(len(Rx_Sig_w_CP) / Num_Dta_chnk))])
-        plt.xlabel('Time')
-        plt.ylabel('S(t) with GI')
-        plt.title('Recieved upsampled OFDM symbol with CP in time domain')
-        plt.grid()
-        plt.show()
+        # plt.figure()
+        # plt.plot(Rx_Sig_w_CP[range(int(len(Rx_Sig_w_CP) / Num_Dta_chnk))])
+        # plt.xlabel('Time')
+        # plt.ylabel('S(t) with GI')
+        # plt.title('Recieved upsampled OFDM symbol with CP in time domain')
+        # plt.grid()
+        # plt.show()
 
         Sig_dn_w_CP = signal.decimate(Rx_Sig_w_CP, 32, n=None, ftype='iir', axis=- 1, zero_phase=True)
         ###################################################################################
@@ -69,10 +69,10 @@ def OFDM_FFT_Rx(received_signal, original_data, transmitted_signal):
 
     # Add noise Discrete channel
     Eb_Discrete = 1
-    gamma_b_dB_Max = 20
+    gamma_b_dB_Max = 40
     SER_vec = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
-    for gamma_b_dB in range(gamma_b_dB_Max + 1):
-        # for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):    # for debug for single SNR/bit value
+    # for gamma_b_dB in range(gamma_b_dB_Max + 1):
+    for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):    # for debug for single SNR/bit value
         gamma_b_L = 10 ** (0.1 * gamma_b_dB)
         N0_Discrete = Eb_Discrete / gamma_b_L
         Ni_Discrete = np.sqrt(N0_Discrete / 2) * np.random.normal(loc=0, scale=1,
@@ -162,6 +162,7 @@ def OFDM_FFT_Rx(received_signal, original_data, transmitted_signal):
         # performance check:
         Tx_Dta = original_data
         correct_Symbols = (Tx_Dta == Rx_Dta) * 1
+        print(correct_Symbols[range(int(len(correct_Symbols) / Num_Dta_chnk))])
         SER = 1 - np.sum(correct_Symbols) / len(Rx_Dta)
 
         # print(SER)
