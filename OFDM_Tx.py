@@ -227,16 +227,22 @@ def OFDM_FFT_Tx(input_data):
 
     ######################## D/A converter:#############################################################
     # up sample by factor of 32
-    (S_t_w_CP_up32, t_w_CP_up32) = signal.resample(S_t_w_CP, 32 * len(S_t_w_CP), t_w_CP, domain='time')
+    # upsample using ZOH interpolation
+    # (S_t_w_CP_up32, t_w_CP_up32) = signal.resample(S_t_w_CP, 32 * len(S_t_w_CP), t_w_CP, domain='time')
+    spaced_S_t_w_CP_up32 = np.zeros(32 * len(S_t_w_CP), dtype=np.complex)
+    spaced_S_t_w_CP_up32[::32] = S_t_w_CP
+    g_ZOH = np.ones(32, dtype=np.complex)
+    S_t_w_CP_up32 = signal.lfilter(g_ZOH, 1, spaced_S_t_w_CP_up32)
+    t_w_CP_up32 = np.arange(0, (Tsym + GI) * Num_Dta_chnk, 1 / (32 * F_samp))
 
-    # plt.figure()
-    # plt.plot(t_w_CP[range(int(len(t_w_CP)/Num_Dta_chnk))], S_t_w_CP[range(int(len(S_t_w_CP)/Num_Dta_chnk))], t_w_CP_up32[range(int(len(t_w_CP_up32)/Num_Dta_chnk))], S_t_w_CP_up32[range(int(len(S_t_w_CP_up32)/Num_Dta_chnk))])
-    # plt.xlabel('Time')
-    # plt.ylabel('S(t) with GI')
-    # plt.title('regular vs upsampled OFDM symbol with CP in time domain')
-    # plt.grid()
-    # plt.legend(['s(t)', 'upsampled s(t)'])
-    # plt.show()
+    plt.figure()
+    plt.plot(t_w_CP[:int(len(t_w_CP)/Num_Dta_chnk)], S_t_w_CP[:int(len(S_t_w_CP)/Num_Dta_chnk)], t_w_CP_up32[:int(len(t_w_CP_up32)/Num_Dta_chnk)], S_t_w_CP_up32[:int(len(S_t_w_CP_up32)/Num_Dta_chnk)])
+    plt.xlabel('Time')
+    plt.ylabel('S(t) with GI')
+    plt.title('regular vs upsampled OFDM symbol with CP in time domain')
+    plt.grid()
+    plt.legend(['s(t)', 'upsampled s(t)'])
+    plt.show()
     ###################################################################################################
 
     return S_t_w_CP_up32, S_t_w_CP

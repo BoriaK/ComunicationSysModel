@@ -98,7 +98,7 @@ def OFDM_FFT_Rx(received_signal, original_data, transmitted_signal):
                                                      int((chnk + 1) * (len(R_t_Disc_w_CP) / Num_Dta_chnk)))]
 
             # Remove CP
-            Sig_t_chnk = R_t_Disc_chnk_w_CP[range(16, len(R_t_Disc_chnk_w_CP))]
+            Sig_t_chnk = R_t_Disc_chnk_w_CP[16: len(R_t_Disc_chnk_w_CP)]
             # plt.figure()
             # plt.plot(t, Sig_t)
             # plt.xlabel('Time')
@@ -130,7 +130,7 @@ def OFDM_FFT_Rx(received_signal, original_data, transmitted_signal):
 
                 # print(Dta_vec_chnk)
 
-            Dta_vec[range(chnk * len(Dta_vec_chnk), (chnk + 1) * len(Dta_vec_chnk))] = Dta_vec_chnk
+            Dta_vec[chnk * len(Dta_vec_chnk):(chnk + 1) * len(Dta_vec_chnk)] = Dta_vec_chnk
 
         # Demapper - descision circle
 
@@ -162,7 +162,7 @@ def OFDM_FFT_Rx(received_signal, original_data, transmitted_signal):
         # performance check:
         Tx_Dta = original_data
         correct_Symbols = (Tx_Dta == Rx_Dta) * 1
-        print(correct_Symbols[range(int(len(correct_Symbols) / Num_Dta_chnk))])
+        print(correct_Symbols[:int(len(correct_Symbols) / Num_Dta_chnk)])
         SER = 1 - np.sum(correct_Symbols) / len(Rx_Dta)
 
         # print(SER)
