@@ -47,8 +47,6 @@ def OFDM_FFT_Tx(input_data):
                 S_f_chnk[k] = Dta_Tx_chnk[k - skip]
 
         # S_f[chnk] = S_f_chnk
-        # prepare time domain signal using IFFT:
-        S_t_chnk = np.fft.ifft(S_f_chnk, n=64)
 
         # single OFDM symbol in Frequency domain
         # plt.figure()
@@ -58,6 +56,9 @@ def OFDM_FFT_Tx(input_data):
         # plt.grid()
         # plt.title('OFDM symbol in frequency domain')
         # plt.show()
+
+        # prepare time domain signal using IFFT:
+        S_t_chnk = np.fft.ifft(np.fft.fftshift(S_f_chnk), n=64)
 
         # single OFDM symbol in Time domain
         # plt.figure()
@@ -128,6 +129,8 @@ def OFDM_FFT_Rx(recieved_signal, original_data):
     Dta_I = np.zeros(56 * Num_Dta_chnk, dtype=np.float)
     Dta_Q = np.zeros(56 * Num_Dta_chnk, dtype=np.float)
 
+    Rx_Sig_w_CP = recieved_signal  # Received signal without noise
+
     ################next step###########################################################
     # A/D
     # Rx_Sig_w_CP = S_t_w_CP_up32
@@ -150,8 +153,6 @@ def OFDM_FFT_Rx(recieved_signal, original_data):
     # plt.grid()
     # plt.show()
     ###################################################################################
-
-    Rx_Sig_w_CP = recieved_signal  # Received signal without noise
 
     # Add noise Discrete channel
     Es_Discrete = Es_vec[str(M)]
@@ -196,7 +197,7 @@ def OFDM_FFT_Rx(recieved_signal, original_data):
             # plt.show()
 
             # FFT Block:
-            Sig_f_chnk = np.fft.fft(Sig_t_chnk, n=64)
+            Sig_f_chnk = np.fft.fftshift(np.fft.fft(Sig_t_chnk, n=64))
 
             # OFDM symbol in Frequency domain
             # plt.figure()
@@ -221,7 +222,7 @@ def OFDM_FFT_Rx(recieved_signal, original_data):
             Dta_vec[range(chnk * len(Dta_vec_chnk), (chnk + 1) * len(Dta_vec_chnk))] = Dta_vec_chnk
 
         # constalation:
-        if gamma_b_dB == 30:
+        if gamma_b_dB == gamma_b_dB_Max:
             scatter(Dta_vec, M, gamma_b_dB)
 
         # Demapper - descision circle
@@ -260,7 +261,7 @@ def OFDM_FFT_Rx(recieved_signal, original_data):
         SER_vec[gamma_b_dB] = SER
         # SER_analitic[gamma_b_dB] = (3/2)*math.erfc(np.sqrt(0.1*gamma_b_L))
 
-    print(SER_vec)
+    # print(SER_vec)
 
     # plot SER as function of SNR/bit
     plt.semilogy(range(gamma_b_dB_Max + 1), SER_vec, range(gamma_b_dB_Max + 1), SER_analitic)
