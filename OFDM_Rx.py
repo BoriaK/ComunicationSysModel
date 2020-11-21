@@ -23,7 +23,7 @@ Tx_Dta = m_i + 1j * m_q
 
 
 # Rx
-def OFDM_FFT_Rx(received_signal, original_data, transmitted_signal):
+def OFDM_FFT_Rx(transmitted_signal, up, original_data):
     GI = 0.8 * 1e-6  # 0.8[uS] Long GI
     Tsym = 3.2 * 1e-6  # 3.2 [uS] symbol time
     Delta_F = 1 / Tsym
@@ -38,7 +38,7 @@ def OFDM_FFT_Rx(received_signal, original_data, transmitted_signal):
     Dta_I = np.zeros(56 * Num_Dta_chnk, dtype=np.float)
     Dta_Q = np.zeros(56 * Num_Dta_chnk, dtype=np.float)
 
-    Rx_Sig_w_CP = received_signal  # Received signal without noise
+    Rx_Sig_w_CP = transmitted_signal  # Received signal without noise
     if len(Rx_Sig_w_CP) > len(t_w_CP):
         ################next step###########################################################
         # A/D
@@ -50,22 +50,23 @@ def OFDM_FFT_Rx(received_signal, original_data, transmitted_signal):
         # plt.grid()
         # plt.show()
 
-        Sig_dn_w_CP = signal.decimate(Rx_Sig_w_CP, 32, n=None, ftype='iir', axis=- 1, zero_phase=True)
+        dn = up
+        Sig_dn_w_CP = Rx_Sig_w_CP[::dn]
         ###################################################################################
 
     else:
         Sig_dn_w_CP = Rx_Sig_w_CP
 
-    plt.figure()
-    plt.plot(t_w_CP[range(int(len(t_w_CP) / Num_Dta_chnk))],
-             transmitted_signal[range(int(len(transmitted_signal) / Num_Dta_chnk))],
-             t_w_CP[range(int(len(t_w_CP) / Num_Dta_chnk))], Sig_dn_w_CP[range(int(len(Sig_dn_w_CP) / Num_Dta_chnk))])
-    plt.xlabel('Time')
-    plt.ylabel('S(t) with GI')
-    plt.title('perliminary Tx OFDM symbol vs Down sampled Rx OFDM symbol with CP in time domain')
-    plt.legend(['Tx s(t)', 'Rx s(t)'])
-    plt.grid()
-    plt.show()
+    # plt.figure()
+    # plt.plot(t_w_CP[range(int(len(t_w_CP) / Num_Dta_chnk))],
+    #          original_signal[range(int(len(original_signal) / Num_Dta_chnk))],
+    #          t_w_CP[range(int(len(t_w_CP) / Num_Dta_chnk))], Sig_dn_w_CP[range(int(len(Sig_dn_w_CP) / Num_Dta_chnk))])
+    # plt.xlabel('Time')
+    # plt.ylabel('S(t) with GI')
+    # plt.title('perliminary Tx OFDM symbol vs Down sampled Rx OFDM symbol with CP in time domain')
+    # plt.legend(['Tx s(t)', 'Rx s(t)'])
+    # plt.grid()
+    # plt.show()
 
     # Add noise Discrete channel
     Eb_Discrete = 1
@@ -180,8 +181,8 @@ def OFDM_FFT_Rx(received_signal, original_data, transmitted_signal):
 
 
 def main():
-    S_t_w_CP_up32, S_t_w_CP = OFDM_FFT_Tx(Tx_Dta)
-    OFDM_FFT_Rx(S_t_w_CP_up32, Tx_Dta, S_t_w_CP)
+    S_t_w_CP_up, up = OFDM_FFT_Tx(Tx_Dta)
+    OFDM_FFT_Rx(S_t_w_CP_up, up, Tx_Dta)
 
 
 main()
