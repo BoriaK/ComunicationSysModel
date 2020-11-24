@@ -4,6 +4,7 @@ from commpy.filters import rrcosfilter
 from scipy import signal
 import math
 from OFDM_Tx import OFDM_FFT_Tx
+from scatterPlot import scatter
 
 # Tx
 Num_Dta_chnk = int(1e3)  # number of data chunks
@@ -57,23 +58,12 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data):
     else:
         Sig_dn_w_CP = Rx_Sig_w_CP
 
-    # plt.figure()
-    # plt.plot(t_w_CP[range(int(len(t_w_CP) / Num_Dta_chnk))],
-    #          original_signal[range(int(len(original_signal) / Num_Dta_chnk))],
-    #          t_w_CP[range(int(len(t_w_CP) / Num_Dta_chnk))], Sig_dn_w_CP[range(int(len(Sig_dn_w_CP) / Num_Dta_chnk))])
-    # plt.xlabel('Time')
-    # plt.ylabel('S(t) with GI')
-    # plt.title('perliminary Tx OFDM symbol vs Down sampled Rx OFDM symbol with CP in time domain')
-    # plt.legend(['Tx s(t)', 'Rx s(t)'])
-    # plt.grid()
-    # plt.show()
-
     # Add noise Discrete channel
     Eb_Discrete = 1
     gamma_b_dB_Max = 40
     SER_vec = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
     # for gamma_b_dB in range(gamma_b_dB_Max + 1):
-    for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):    # for debug for single SNR/bit value
+    for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):  # for debug for single SNR/bit value
         gamma_b_L = 10 ** (0.1 * gamma_b_dB)
         N0_Discrete = Eb_Discrete / gamma_b_L
         Ni_Discrete = np.sqrt(N0_Discrete / 2) * np.random.normal(loc=0, scale=1,
@@ -85,23 +75,23 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data):
         R_t_Disc_w_CP = Sig_dn_w_CP + N_Discrete
 
         # plt.figure()
-        # plt.plot(t_w_CP, S_t_w_CP, t_w_CP, R_t_Disc_w_CP)
+        # plt.plot(t_w_CP, Sig_dn_w_CP, t_w_CP, R_t_Disc_w_CP)
         # plt.xlabel('Time')
         # plt.ylabel('S(t) with GI')
-        # plt.title('Tx OFDM symbol Noisy Rx OFDM symbol SNR = ' + str(gamma_b_dB) + ' with CP in time domain')
+        # plt.title('Clean Rx OFDM symbol Noisy Rx OFDM symbol SNR = ' + str(gamma_b_dB) + ' with CP in time domain')
         # plt.legend(['Tx s(t)', 'Rx R(t)'])
         # plt.grid()
         # plt.show()
 
         # S/P Converter
         for chnk in range(Num_Dta_chnk):
-            R_t_Disc_chnk_w_CP = R_t_Disc_w_CP[range(int(chnk * (len(R_t_Disc_w_CP) / Num_Dta_chnk)),
-                                                     int((chnk + 1) * (len(R_t_Disc_w_CP) / Num_Dta_chnk)))]
+            R_t_Disc_chnk_w_CP = R_t_Disc_w_CP[int(chnk * (len(R_t_Disc_w_CP) / Num_Dta_chnk)):
+                                               int((chnk + 1) * (len(R_t_Disc_w_CP) / Num_Dta_chnk))]
 
             # Remove CP
-            Sig_t_chnk = R_t_Disc_chnk_w_CP[16: len(R_t_Disc_chnk_w_CP)]
+            Sig_t_chnk = R_t_Disc_chnk_w_CP[16:len(R_t_Disc_chnk_w_CP)]
             # plt.figure()
-            # plt.plot(t, Sig_t)
+            # plt.plot(t_sym, Sig_t_chnk)
             # plt.xlabel('Time')
             # plt.ylabel('S(t)')
             # plt.title('single Rx OFDM symbol in time domain')
@@ -133,6 +123,9 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data):
 
             Dta_vec[chnk * len(Dta_vec_chnk):(chnk + 1) * len(Dta_vec_chnk)] = Dta_vec_chnk
 
+            # constalation:
+            if gamma_b_dB == gamma_b_dB_Max:
+                scatter(Dta_vec, M, gamma_b_dB)
         # Demapper - descision circle
 
         # the thresholds are {-2, 0, 2}

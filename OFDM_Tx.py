@@ -163,7 +163,7 @@ def OFDM_FFT_Tx(input_data):
     # S_f = np.zeros((Num_Dta_chnk, len(F_axis)), dtype=np.complex)
     for chnk in range(Num_Dta_chnk):
         S_f_chnk = np.zeros(len(F_axis), dtype=np.complex)
-        Dta_Tx_chnk = input_data[range(chnk * 56, (chnk+1) * 56)]
+        Dta_Tx_chnk = input_data[chnk * 56:(chnk+1) * 56]
         # prepare the data in frequency domain:
         skip = 0
         for k in range(len(F_axis)):
@@ -200,9 +200,9 @@ def OFDM_FFT_Tx(input_data):
 
         # inserting cyclic prefix:
         S_t_chnk_w_CP = np.zeros(int(len(S_t_chnk) + 16), dtype=np.complex)
-        CP = S_t_chnk[range(int(len(S_t_chnk) - 16), len(S_t_chnk))]
-        S_t_chnk_w_CP[range(16)] = CP
-        S_t_chnk_w_CP[range(16, len(S_t_chnk_w_CP))] = S_t_chnk
+        CP = S_t_chnk[int(len(S_t_chnk) - 16):len(S_t_chnk)]
+        S_t_chnk_w_CP[:16] = CP
+        S_t_chnk_w_CP[16:len(S_t_chnk_w_CP)] = S_t_chnk
 
         t_sym_w_CP = np.arange(0, Tsym + GI, 1 / F_samp)  # new Symbol time includes cyclic prefix
 
@@ -214,7 +214,7 @@ def OFDM_FFT_Tx(input_data):
         # plt.grid()
         # plt.show()
 
-        S_t_w_CP[range(chnk*len(S_t_chnk_w_CP), (chnk+1)*len(S_t_chnk_w_CP))] = S_t_chnk_w_CP
+        S_t_w_CP[chnk*len(S_t_chnk_w_CP):(chnk+1)*len(S_t_chnk_w_CP)] = S_t_chnk_w_CP
 
     t_w_CP = np.arange(0, (Tsym + GI) * Num_Dta_chnk, 1 / F_samp)
     # plt.figure()

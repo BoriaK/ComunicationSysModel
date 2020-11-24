@@ -5,7 +5,7 @@ from scipy import signal
 import math
 from scatterPlot import scatter
 
-Num_Dta_chnk = int(100*1e3)  # number of data chunks
+Num_Dta_chnk = int(100 * 1e3)  # number of data chunks
 # random 56 symbols of data per packet
 rng = np.random.default_rng()
 # lookup table for Symbol energy discrete model:
@@ -87,21 +87,9 @@ def OFDM_FFT_Tx(input_data):
         # plt.grid()
         # plt.show()
 
-        ######################## D/A converter:#############################################################
-        # up sample by factor of 32
-        # (S_t_w_CP_up32, t_w_CP_up32) = signal.resample(S_t_w_CP, 32 * len(S_t_w_CP), t_w_CP, domain='time')
-        #
-        # plt.figure()
-        # plt.plot(t_w_CP_up32, S_t_w_CP_up32)
-        # plt.xlabel('Time')
-        # plt.ylabel('S(t) with GI')
-        # plt.title('upsampled OFDM symbol with CP in time domain')
-        # plt.grid()
-        # plt.show()
-        ###################################################################################################
-        S_t_w_CP[range(chnk * len(S_t_chnk_w_CP), (chnk + 1) * len(S_t_chnk_w_CP))] = S_t_chnk_w_CP
+        S_t_w_CP[chnk * len(S_t_chnk_w_CP):(chnk + 1) * len(S_t_chnk_w_CP)] = S_t_chnk_w_CP
 
-    # t_w_CP = np.arange(0, (Tsym + GI) * Num_Dta_chnk, 1 / F_samp)
+    t_w_CP = np.arange(0, (Tsym + GI) * Num_Dta_chnk, 1 / F_samp)
     # plt.figure()
     # plt.plot(t_w_CP, S_t_w_CP)
     # plt.xlabel('Time')
@@ -110,11 +98,32 @@ def OFDM_FFT_Tx(input_data):
     # plt.grid()
     # plt.show()
 
-    return S_t_w_CP
+    ######################## D/A converter:#############################################################
+    # up sample by factor of 32
+    # upsample using ZOH interpolation
+    up = 32
+    spaced_S_t_w_CP_up = np.zeros(up * len(S_t_w_CP), dtype=np.complex)
+    spaced_S_t_w_CP_up[::up] = S_t_w_CP
+    g_ZOH = np.ones(up, dtype=np.complex)
+    S_t_w_CP_up = signal.lfilter(g_ZOH, 1, spaced_S_t_w_CP_up)
+    t_w_CP_up = np.arange(0, (Tsym + GI) * Num_Dta_chnk, 1 / (up * F_samp))
+
+    # plt.figure()
+    # plt.plot(t_w_CP[:int(len(t_w_CP)/Num_Dta_chnk)], S_t_w_CP[:int(len(S_t_w_CP)/Num_Dta_chnk)],
+    #          t_w_CP_up[:int(len(t_w_CP_up)/Num_Dta_chnk)], S_t_w_CP_up[:int(len(S_t_w_CP_up)/Num_Dta_chnk)])
+    # plt.xlabel('Time')
+    # plt.ylabel('S(t) with GI')
+    # plt.title('regular vs upsampled OFDM symbol with CP in time domain')
+    # plt.grid()
+    # plt.legend(['s(t)', 'upsampled s(t)'])
+    # plt.show()
+    ###################################################################################################
+
+    return S_t_w_CP_up, up
 
 
 # Rx
-def OFDM_FFT_Rx(recieved_signal, original_data):
+def OFDM_FFT_Rx(transmitted_signal, up, original_data):
     GI = 0.8 * 1e-6  # 0.8[uS] Long GI
     Tsym = 3.2 * 1e-6  # 3.2 [uS] symbol time
     Delta_F = 1 / Tsym
@@ -129,30 +138,24 @@ def OFDM_FFT_Rx(recieved_signal, original_data):
     Dta_I = np.zeros(56 * Num_Dta_chnk, dtype=np.float)
     Dta_Q = np.zeros(56 * Num_Dta_chnk, dtype=np.float)
 
-    Rx_Sig_w_CP = recieved_signal  # Received signal without noise
+    Rx_Sig_w_CP = transmitted_signal  # Received signal without noise
+    if len(Rx_Sig_w_CP) > len(t_w_CP):
+        ################next step###########################################################
+        # A/D
+        plt.figure()
+        plt.plot(Rx_Sig_w_CP[range(int(len(Rx_Sig_w_CP) / Num_Dta_chnk))])
+        plt.xlabel('Time')
+        plt.ylabel('S(t) with GI')
+        plt.title('Recieved upsampled OFDM symbol with CP in time domain')
+        plt.grid()
+        plt.show()
 
-    ################next step###########################################################
-    # A/D
-    # Rx_Sig_w_CP = S_t_w_CP_up32
-    # Sig_dn_w_CP = signal.decimate(Rx_Sig_w_CP, 32, n=None, ftype='iir', axis=- 1, zero_phase=True)
+        dn = up
+        Sig_dn_w_CP = Rx_Sig_w_CP[::dn]
+        ###################################################################################
 
-    # plt.figure()
-    # plt.plot(t_w_CP_up32, Rx_Sig_w_CP)
-    # plt.xlabel('Time')
-    # plt.ylabel('S(t) with GI')
-    # plt.title('Recieved upsampled OFDM symbol with CP in time domain')
-    # plt.grid()
-    # plt.show()
-
-    # plt.figure()
-    # plt.plot(t_w_CP_up32, S_t_w_CP_up32, t_w_CP_up32, Rx_Sig_w_CP)
-    # plt.xlabel('Time')
-    # plt.ylabel('S(t) with GI')
-    # plt.title('Tx upsampled OFDM symbol Rx upsampled OFDM symbol with CP in time domain')
-    # plt.legend(['Tx s(t)', 'Rx s(t)'])
-    # plt.grid()
-    # plt.show()
-    ###################################################################################
+    else:
+        Sig_dn_w_CP = Rx_Sig_w_CP
 
     # Add noise Discrete channel
     Es_Discrete = Es_vec[str(M)]
@@ -161,33 +164,33 @@ def OFDM_FFT_Rx(recieved_signal, original_data):
     SER_vec = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
     SER_analitic = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
     for gamma_b_dB in range(gamma_b_dB_Max + 1):
-    # for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):    # for debug for single SNR/bit value
+        # for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):    # for debug for single SNR/bit value
         gamma_b_L = 10 ** (0.1 * gamma_b_dB)
         N0_Discrete = Eb_Discrete / gamma_b_L
         Ni_Discrete = np.sqrt(N0_Discrete / 2) * np.random.normal(loc=0, scale=1,
-                                                                  size=len(Rx_Sig_w_CP))  # loc = mean, scale = STDV
+                                                                  size=len(Sig_dn_w_CP))  # loc = mean, scale = STDV
         Nq_Discrete = np.sqrt(N0_Discrete / 2) * np.random.normal(loc=0, scale=1,
-                                                                  size=len(Rx_Sig_w_CP))  # loc = mean, scale = STDV
+                                                                  size=len(Sig_dn_w_CP))  # loc = mean, scale = STDV
         N_Discrete = Ni_Discrete + 1j * Nq_Discrete
 
-        R_t_Disc_w_CP = Rx_Sig_w_CP + N_Discrete
+        R_t_Disc_w_CP = Sig_dn_w_CP + N_Discrete
 
         # plt.figure()
-        # plt.plot(t_w_CP, Rx_Sig_w_CP, t_w_CP, R_t_Disc_w_CP)
+        # plt.plot(t_w_CP, Sig_dn_w_CP, t_w_CP, R_t_Disc_w_CP)
         # plt.xlabel('Time')
         # plt.ylabel('S(t) with GI')
-        # plt.title('Tx OFDM signal vs Noisy Rx OFDM signal SNR = ' + str(gamma_b_dB) + ' with CP in time domain')
+        # plt.title('Clean Rx OFDM signal vs Noisy Rx OFDM signal SNR = ' + str(gamma_b_dB) + ' with CP in time domain')
         # plt.legend(['Tx s(t)', 'Rx R(t)'])
         # plt.grid()
         # plt.show()
 
         # S/P Converter
         for chnk in range(Num_Dta_chnk):
-            R_t_Disc_chnk_w_CP = R_t_Disc_w_CP[range(int(chnk * (len(R_t_Disc_w_CP) / Num_Dta_chnk)),
-                                                     int((chnk + 1) * (len(R_t_Disc_w_CP) / Num_Dta_chnk)))]
+            R_t_Disc_chnk_w_CP = R_t_Disc_w_CP[int(chnk * (len(R_t_Disc_w_CP) / Num_Dta_chnk)):
+                                               int((chnk + 1) * (len(R_t_Disc_w_CP) / Num_Dta_chnk))]
 
             # Remove CP
-            Sig_t_chnk = R_t_Disc_chnk_w_CP[range(16, len(R_t_Disc_chnk_w_CP))]
+            Sig_t_chnk = R_t_Disc_chnk_w_CP[16:len(R_t_Disc_chnk_w_CP)]
             # plt.figure()
             # plt.plot(t_sym, Sig_t_chnk)
             # plt.xlabel('Time')
@@ -219,7 +222,7 @@ def OFDM_FFT_Rx(recieved_signal, original_data):
 
                 # print(Dta_vec_chnk)
 
-            Dta_vec[range(chnk * len(Dta_vec_chnk), (chnk + 1) * len(Dta_vec_chnk))] = Dta_vec_chnk
+            Dta_vec[chnk * len(Dta_vec_chnk):(chnk + 1) * len(Dta_vec_chnk)] = Dta_vec_chnk
 
         # constalation:
         if gamma_b_dB == gamma_b_dB_Max:
@@ -274,8 +277,8 @@ def OFDM_FFT_Rx(recieved_signal, original_data):
 
 
 def main():
-    S_t_w_CP = OFDM_FFT_Tx(Dta_Tx)
-    OFDM_FFT_Rx(S_t_w_CP, Dta_Tx)
+    S_t_w_CP_up, up = OFDM_FFT_Tx(Dta_Tx)
+    OFDM_FFT_Rx(S_t_w_CP_up, up, Dta_Tx)
 
 
 main()
