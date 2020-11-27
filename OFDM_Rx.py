@@ -22,6 +22,8 @@ m_q = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56 * Num_Dta_chnk, dtype=np
 
 Tx_Dta = m_i + 1j * m_q
 
+# lookup table for Symbol energy discrete model:
+Es_vec = {'2': 1, '4': 2, '16': 10}
 
 # Rx
 def OFDM_FFT_Rx(transmitted_signal, up, original_data):
@@ -59,11 +61,14 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data):
         Sig_dn_w_CP = Rx_Sig_w_CP
 
     # Add noise Discrete channel
-    Eb_Discrete = 1
-    gamma_b_dB_Max = 40
+    Es_Numeric = (1 / 100) * np.sum(np.abs(Sig_dn_w_CP[:100 * 80]) ** 2)
+    print(Es_Numeric)
+    # Es_Discrete = Es_vec[str(M)]
+    Eb_Discrete = Es_Numeric / np.log2(M)
+    gamma_b_dB_Max = 30
     SER_vec = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
-    # for gamma_b_dB in range(gamma_b_dB_Max + 1):
-    for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):  # for debug for single SNR/bit value
+    for gamma_b_dB in range(gamma_b_dB_Max + 1):
+    # for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):  # for debug for single SNR/bit value
         gamma_b_L = 10 ** (0.1 * gamma_b_dB)
         N0_Discrete = Eb_Discrete / gamma_b_L
         Ni_Discrete = np.sqrt(N0_Discrete / 2) * np.random.normal(loc=0, scale=1,
@@ -123,9 +128,10 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data):
 
             Dta_vec[chnk * len(Dta_vec_chnk):(chnk + 1) * len(Dta_vec_chnk)] = Dta_vec_chnk
 
-            # constalation:
-            if gamma_b_dB == gamma_b_dB_Max:
-                scatter(Dta_vec, M, gamma_b_dB)
+        # constalation:
+        if gamma_b_dB == gamma_b_dB_Max:
+            scatter(Dta_vec, M, gamma_b_dB)
+
         # Demapper - descision circle
 
         # the thresholds are {-2, 0, 2}

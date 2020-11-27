@@ -160,7 +160,7 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data):
     # Add noise Discrete channel
     Es_Discrete = Es_vec[str(M)]
     Eb_Discrete = Es_Discrete / np.log2(M)
-    gamma_b_dB_Max = 5
+    gamma_b_dB_Max = 20
     SER_vec = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
     SER_analitic = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
     for gamma_b_dB in range(gamma_b_dB_Max + 1):

@@ -244,6 +244,9 @@ def OFDM_FFT_Tx(input_data):
     # plt.grid()
     # plt.legend(['s(t)', 'upsampled s(t)'])
     # plt.show()
+
+    Es = (1/(100*up))*np.sum(np.abs(S_t_w_CP_up[:100*80*up])**2)
+    print(Es)
     ###################################################################################################
 
     return S_t_w_CP_up, up
