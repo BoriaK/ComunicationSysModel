@@ -116,36 +116,6 @@ def OFDM_Oscilator_Tx():
     plt.grid()
     plt.show()
 
-    ############################### for debug:#################################
-    # inserting cyclic prefix in all the carriers sepperatly:
-    # S_tk_w_CP = np.zeros((len(F_axis), int(len(S_t)+16)), dtype=np.complex)
-    # CPk = S_tk[:, range(int(len(S_t)-16), len(S_t))]
-    # S_tk_w_CP[:, range(16)] = CPk
-    # S_tk_w_CP[:, range(16, int(len(S_t)+16))] = S_tk
-    #
-    # # Plot some Carriers of the OFDM symbol with CP in time
-    # plt.figure()
-    # plt.subplot(3, 1, 1)
-    # plt.plot(t_w_CP, S_tk_w_CP[4])
-    # plt.xlabel('Time')
-    # plt.ylabel('S_4(t) + CP')
-    # plt.grid()
-    #
-    # plt.subplot(3, 1, 2)
-    # plt.plot(t_w_CP, S_tk_w_CP[15])
-    # plt.xlabel('Time')
-    # plt.ylabel('S_15(t) + CP')
-    # plt.grid()
-    #
-    # plt.subplot(3, 1, 3)
-    # plt.plot(t_w_CP, S_tk_w_CP[25])
-    # plt.xlabel('Time')
-    # plt.ylabel('S_25(t) + CP')
-    # plt.grid()
-    # plt.suptitle('OFDM symbol with CP in time domain')
-    # plt.show()
-    ############################################################################
-
     return S_t_w_CP_up32
 
 
@@ -225,7 +195,7 @@ def OFDM_FFT_Tx(input_data):
     # plt.grid()
     # plt.show()
 
-    ######################## D/A converter:#############################################################
+    # D/A converter:
     # up sample by factor of 32
     # upsample using ZOH interpolation
     up = 32
@@ -245,9 +215,9 @@ def OFDM_FFT_Tx(input_data):
     # plt.legend(['s(t)', 'upsampled s(t)'])
     # plt.show()
 
-    Es = (1/(1000*up))*np.sum(np.abs(S_t_w_CP_up[:1000*80*up])**2)
+    # to compare symbol energy of up-sampled vs down-sampled signals
+    Es = (1/(100*up))*np.sum(np.abs(S_t_w_CP_up[:100*80*up])**2)
     print(Es)
-    ###################################################################################################
 
     return S_t_w_CP_up, up
 
