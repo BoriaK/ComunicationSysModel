@@ -7,7 +7,7 @@ from OFDM_Tx import OFDM_FFT_Tx
 from scatterPlot import scatter
 
 # Tx
-Num_Dta_chnk = int(1e3)  # number of data chunks
+Num_Dta_chnk = int(10 * 1e3)  # number of data chunks
 # random 56 symbols of data per packet
 rng = np.random.default_rng()
 
@@ -24,6 +24,7 @@ Tx_Dta = m_i + 1j * m_q
 
 # lookup table for Symbol energy discrete model:
 Es_vec = {'2': 1, '4': 2, '16': 10}
+
 
 # Rx
 def OFDM_FFT_Rx(transmitted_signal, up, original_data):
@@ -61,14 +62,15 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data):
         Sig_dn_w_CP = Rx_Sig_w_CP
 
     # Add noise Discrete channel
-    Es_Numeric = (1 / 100) * np.sum(np.abs(Sig_dn_w_CP[:100 * 80]) ** 2)
+    Es_Numeric = (1 / 1000) * np.sum(np.abs(Sig_dn_w_CP[:1000 * 80]) ** 2)
     print(Es_Numeric)
     # Es_Discrete = Es_vec[str(M)]
     Eb_Discrete = Es_Numeric / np.log2(M)
     gamma_b_dB_Max = 30
     SER_vec = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
+    SER_analitic = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
     for gamma_b_dB in range(gamma_b_dB_Max + 1):
-    # for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):  # for debug for single SNR/bit value
+        # for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):  # for debug for single SNR/bit value
         gamma_b_L = 10 ** (0.1 * gamma_b_dB)
         N0_Discrete = Eb_Discrete / gamma_b_L
         Ni_Discrete = np.sqrt(N0_Discrete / 2) * np.random.normal(loc=0, scale=1,
@@ -162,13 +164,15 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data):
         # performance check:
         Tx_Dta = original_data
         correct_Symbols = (Tx_Dta == Rx_Dta) * 1
-        print(correct_Symbols[:int(len(correct_Symbols) / Num_Dta_chnk)])
+        # print(correct_Symbols[:int(len(correct_Symbols) / Num_Dta_chnk)])
         SER = 1 - np.sum(correct_Symbols) / len(Rx_Dta)
 
         # print(SER)
         SER_vec[gamma_b_dB] = SER
+        SER_analitic[gamma_b_dB] = (3 / 2) * math.erfc(np.sqrt(0.4 * gamma_b_L))
 
-    # print(SER_vec)
+    print(SER_vec)
+    print(SER_analitic)
 
     # plot SER as function of SNR/bit
     plt.semilogy(range(gamma_b_dB_Max + 1), SER_vec)

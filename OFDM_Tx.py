@@ -5,7 +5,7 @@ from scipy import signal
 import math
 
 
-Num_Dta_chnk = int(1e3)  # number of data chunks
+Num_Dta_chnk = int(10 * 1e3)  # number of data chunks
 # random 56 symbols of data per packet
 rng = np.random.default_rng()
 
@@ -245,7 +245,7 @@ def OFDM_FFT_Tx(input_data):
     # plt.legend(['s(t)', 'upsampled s(t)'])
     # plt.show()
 
-    Es = (1/(100*up))*np.sum(np.abs(S_t_w_CP_up[:100*80*up])**2)
+    Es = (1/(1000*up))*np.sum(np.abs(S_t_w_CP_up[:1000*80*up])**2)
     print(Es)
     ###################################################################################################
 
