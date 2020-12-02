@@ -49,15 +49,15 @@ def TxMod(input_data):
     t_up = np.arange(0, Tsym * n, 1 / (up * Tsym ** -1))
     t_up = t_up[:len(t_up) - 1]
 
-    # plt.plot(t_up[: 16 * up], m_up[: 16 * up])  # print 8 symbols (in time domain)
+    # plt.plot(t_up[: 16 * up], m_up[: 16 * up])  # print 16 symbols (in time domain)
     # plt.xlabel('Time')
     # plt.ylabel('S(t)')
     # plt.title('transmitted up-sampled ' + str(M) + 'QAM symbol in time domain')
     # plt.grid()
     # plt.show()
 
-    Es = (1 / (100 * up)) * np.sum(np.power(np.abs(m_up[: 100 * up]), 2))
-    Eb = format((1 / np.log2(M)) * Es, '.2f')
+    # Es = (1 / (100 * up)) * np.sum(np.power(np.abs(m_up[: 100 * up]), 2))
+    # Eb = format((1 / np.log2(M)) * Es, '.2f')
     # print(Eb)
     return m_up, up
 
