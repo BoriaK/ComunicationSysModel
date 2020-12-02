@@ -18,7 +18,7 @@ m_i = 2 * rng.integers(1, high=int(np.sqrt(M)), size=n, dtype=np.int64, endpoint
 # quadrature data
 m_q = 2 * rng.integers(1, high=int(np.sqrt(M)), size=n, dtype=np.int64, endpoint=True) - 1 - int(
     np.sqrt(M))
-# m = m_i + 1j * m_q
+
 data = m_i + 1j * m_q
 
 
@@ -35,18 +35,11 @@ def RxMod(TxSignal, up, original_data):
 
     Rx_Sig = TxSignal  # Received signal without noise
 
-    # if len(Rx_Sig) > len(t):
-    #     dn = up
-    #     Sig_dn = Rx_Sig[::dn]
-    #
-    # else:
-    #     Sig_dn = Rx_Sig
-
     # Add noise continues channel
     Es_Numeric = (1 / (1000 * up)) * np.sum(np.power(np.abs(Rx_Sig[:(1000 * up)]), 2))  # compute average Symbol energy on 100 symbols
     # print(Es_Numeric)
     Eb_Continues = Es_Numeric / np.log2(M)
-    gamma_b_dB_Max = 15
+    gamma_b_dB_Max = 14
     SER_vec = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
     SER_analitic = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
 

@@ -56,9 +56,6 @@ def TxMod(input_data):
     # plt.grid()
     # plt.show()
 
-    # Es = (1 / (100 * up)) * np.sum(np.power(np.abs(m_up[: 100 * up]), 2))
-    # Eb = format((1 / np.log2(M)) * Es, '.2f')
-    # print(Eb)
     return m_up, up
 
 
