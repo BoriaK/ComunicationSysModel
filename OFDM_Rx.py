@@ -61,7 +61,7 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data):
 
     # Add noise Discrete channel
     Es_Numeric = (1 / 100) * np.sum(np.abs(Sig_dn_w_CP[:100 * 80]) ** 2)  # compute average Symbol energy on 100
-    # symbols
+    # symbols, 80 samples per symbol
     print(Es_Numeric)
     # Es_Discrete = Es_vec[str(M)]
     Eb_Discrete = Es_Numeric / np.log2(M)
