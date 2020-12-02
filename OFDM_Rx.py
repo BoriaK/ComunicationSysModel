@@ -72,12 +72,12 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data):
         # for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):  # for debug for single SNR/bit value
         gamma_b_L = 10 ** (0.1 * gamma_b_dB)
         N0_Discrete = Eb_Discrete / gamma_b_L
-        Ni_Discrete = (N0_Discrete / 2) * np.random.normal(loc=0, scale=1,
-                                                           size=len(
-                                                               Sig_dn_w_CP))  # loc = mean, scale = STDV
-        Nq_Discrete = (N0_Discrete / 2) * np.random.normal(loc=0, scale=1,
-                                                           size=len(
-                                                               Sig_dn_w_CP))  # loc = mean, scale = STDV
+        Ni_Discrete = np.sqrt(N0_Discrete / 2) * np.random.normal(loc=0, scale=1,
+                                                                  size=len(
+                                                                      Sig_dn_w_CP))  # loc = mean, scale = STDV
+        Nq_Discrete = np.sqrt(N0_Discrete / 2) * np.random.normal(loc=0, scale=1,
+                                                                  size=len(
+                                                                      Sig_dn_w_CP))  # loc = mean, scale = STDV
         N_Discrete = Ni_Discrete + 1j * Nq_Discrete
 
         R_t_Disc_w_CP = Sig_dn_w_CP + N_Discrete
@@ -131,11 +131,11 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data):
 
             Dta_vec[chnk * len(Dta_vec_chnk):(chnk + 1) * len(Dta_vec_chnk)] = Dta_vec_chnk
 
-        # constalation:
+        # constellation:
         if gamma_b_dB == gamma_b_dB_Max:
             scatter(Dta_vec, M, gamma_b_dB)
 
-        # Demapper - descision circle
+        # De mapper - decision circle
 
         # the thresholds are {-2, 0, 2}
 
