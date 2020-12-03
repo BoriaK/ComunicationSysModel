@@ -36,7 +36,7 @@ def RxMod(TxSignal, up, original_data):
     Rx_Sig = TxSignal  # Received signal without noise
 
     # Add noise continues channel
-    Es_Numeric = (1 / (1000 * up)) * np.sum(np.power(np.abs(Rx_Sig[:(1000 * up)]), 2))  # compute average Symbol energy on 100 symbols
+    Es_Numeric = (1 / (1000 * up)) * np.sum(np.power(np.abs(Rx_Sig[:(1000 * up)]), 2))  # compute average Symbol energy on 1K symbols
     # print(Es_Numeric)
     Eb_Continues = Es_Numeric / np.log2(M)
     gamma_b_dB_Max = 14
