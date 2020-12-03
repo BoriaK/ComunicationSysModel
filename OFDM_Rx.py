@@ -7,7 +7,7 @@ from OFDM_Tx import OFDM_FFT_Tx
 from scatterPlot import scatter
 
 # Tx
-Num_Dta_chnk = int(10 * 1e3)  # number of data chunks
+Num_Dta_chnk = int(100 * 1e3)  # number of data chunks
 # random 56 symbols of data per packet
 rng = np.random.default_rng()
 
@@ -60,36 +60,35 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data):
         Sig_dn_w_CP = Rx_Sig_w_CP
 
     # Add noise Discrete channel
-    Es_Numeric = (1 / 100) * np.sum(np.abs(Sig_dn_w_CP[:100 * 80]) ** 2)  # compute average Symbol energy on 100
+    # Es_Numeric = (1 / 100) * np.sum(np.abs(Sig_dn_w_CP[:100 * 80]) ** 2)  # compute average Symbol energy on 100
     # symbols, 80 samples per symbol
-    print(Es_Numeric)
-    # Es_Discrete = Es_vec[str(M)]
-    Eb_Discrete = Es_Numeric / np.log2(M)
-    gamma_b_dB_Max = 20
+    # print(Es_Numeric)
+    Es_Theoretical = Es_vec[str(M)]
+    Eb_Discrete = Es_Theoretical / np.log2(M)
+    gamma_b_dB_Max = 15
     SER_vec = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
     SER_analitic = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
     for gamma_b_dB in range(gamma_b_dB_Max + 1):
         # for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):  # for debug for single SNR/bit value
         gamma_b_L = 10 ** (0.1 * gamma_b_dB)
         N0_Discrete = Eb_Discrete / gamma_b_L
-        Ni_Discrete = np.sqrt(N0_Discrete / 2) * (56 / 64) * np.random.normal(loc=0, scale=1,
-                                                                              size=len(Sig_dn_w_CP))  # loc = mean,
-        # scale = STDV
-        Nq_Discrete = np.sqrt(N0_Discrete / 2) * (56 / 64) * np.random.normal(loc=0, scale=1,
-                                                                              size=len(Sig_dn_w_CP))  # loc = mean,
-        # scale = STDV
+        Pn = (N0_Discrete / 2) * (1 / 64)  # the poise power for 1 symbol devided by the number of samples
+        Ni_Discrete = np.sqrt(Pn) * np.random.normal(loc=0, scale=1,
+                                                     size=len(Sig_dn_w_CP))  # loc = mean, scale = STDV
+        Nq_Discrete = np.sqrt(Pn) * np.random.normal(loc=0, scale=1,
+                                                     size=len(Sig_dn_w_CP))  # loc = mean, scale = STDV
         N_Discrete = Ni_Discrete + 1j * Nq_Discrete
 
         R_t_Disc_w_CP = Sig_dn_w_CP + N_Discrete
 
-        plt.figure()
-        plt.plot(t_w_CP[:80], Sig_dn_w_CP[:80], t_w_CP[:80], R_t_Disc_w_CP[:80])
-        plt.xlabel('Time')
-        plt.ylabel('S(t) with GI')
-        plt.title('Clean Rx OFDM symbol Noisy Rx OFDM symbol Eb/N0 = ' + str(gamma_b_dB) + 'dB with CP in time domain')
-        plt.legend(['Tx s(t)', 'Rx R(t)'])
-        plt.grid()
-        plt.show()
+        # plt.figure()
+        # plt.plot(t_w_CP[:80], Sig_dn_w_CP[:80], t_w_CP[:80], R_t_Disc_w_CP[:80])
+        # plt.xlabel('Time')
+        # plt.ylabel('S(t) with GI')
+        # plt.title('Clean Rx OFDM symbol vs Noisy Rx OFDM symbol Eb/N0 = ' + str(gamma_b_dB) + 'dB with CP in time domain')
+        # plt.legend(['Tx s(t)', 'Rx R(t)'])
+        # plt.grid()
+        # plt.show()
 
         # S/P Converter
         for chnk in range(Num_Dta_chnk):

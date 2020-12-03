@@ -98,7 +98,7 @@ def OFDM_FFT_Tx(input_data):
     # plt.grid()
     # plt.show()
 
-    ######################## D/A converter:#############################################################
+    # D/A converter:
     # up sample by factor of 32
     # upsample using ZOH interpolation
     up = 32
@@ -117,7 +117,6 @@ def OFDM_FFT_Tx(input_data):
     # plt.grid()
     # plt.legend(['s(t)', 'upsampled s(t)'])
     # plt.show()
-    ###################################################################################################
 
     return S_t_w_CP_up, up
 
@@ -140,46 +139,48 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data):
 
     Rx_Sig_w_CP = transmitted_signal  # Received signal without noise
     if len(Rx_Sig_w_CP) > len(t_w_CP):
-        ################next step###########################################################
         # A/D
-        plt.figure()
-        plt.plot(Rx_Sig_w_CP[range(int(len(Rx_Sig_w_CP) / Num_Dta_chnk))])
-        plt.xlabel('Time')
-        plt.ylabel('S(t) with GI')
-        plt.title('Recieved upsampled OFDM symbol with CP in time domain')
-        plt.grid()
-        plt.show()
+        # plt.figure()
+        # plt.plot(Rx_Sig_w_CP[range(int(len(Rx_Sig_w_CP) / Num_Dta_chnk))])
+        # plt.xlabel('Time')
+        # plt.ylabel('S(t) with GI')
+        # plt.title('Recieved upsampled OFDM symbol with CP in time domain')
+        # plt.grid()
+        # plt.show()
 
         dn = up
         Sig_dn_w_CP = Rx_Sig_w_CP[::dn]
-        ###################################################################################
 
     else:
         Sig_dn_w_CP = Rx_Sig_w_CP
 
     # Add noise Discrete channel
-    Es_Discrete = Es_vec[str(M)]
-    Eb_Discrete = Es_Discrete / np.log2(M)
-    gamma_b_dB_Max = 20
+    # Es_Numeric = (1 / 100) * np.sum(np.abs(Sig_dn_w_CP[:100 * 80]) ** 2)  # compute average Symbol energy on 100
+    # symbols, 80 samples per symbol
+    # print(Es_Numeric)
+    Es_Theoretical = Es_vec[str(M)]
+    Eb_Discrete = Es_Theoretical / np.log2(M)
+    gamma_b_dB_Max = 15
     SER_vec = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
     SER_analitic = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
     for gamma_b_dB in range(gamma_b_dB_Max + 1):
         # for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):    # for debug for single SNR/bit value
         gamma_b_L = 10 ** (0.1 * gamma_b_dB)
         N0_Discrete = Eb_Discrete / gamma_b_L
-        Ni_Discrete = np.sqrt(N0_Discrete / 2) * np.random.normal(loc=0, scale=1,
-                                                                  size=len(Sig_dn_w_CP))  # loc = mean, scale = STDV
-        Nq_Discrete = np.sqrt(N0_Discrete / 2) * np.random.normal(loc=0, scale=1,
-                                                                  size=len(Sig_dn_w_CP))  # loc = mean, scale = STDV
+        Pn = (N0_Discrete / 2) * (1 / 64)  # the poise power for 1 symbol devided by the number of samples
+        Ni_Discrete = np.sqrt(Pn) * np.random.normal(loc=0, scale=1,
+                                                     size=len(Sig_dn_w_CP))  # loc = mean, scale = STDV
+        Nq_Discrete = np.sqrt(Pn) * np.random.normal(loc=0, scale=1,
+                                                     size=len(Sig_dn_w_CP))  # loc = mean, scale = STDV
         N_Discrete = Ni_Discrete + 1j * Nq_Discrete
 
         R_t_Disc_w_CP = Sig_dn_w_CP + N_Discrete
 
         # plt.figure()
-        # plt.plot(t_w_CP, Sig_dn_w_CP, t_w_CP, R_t_Disc_w_CP)
+        # plt.plot(t_w_CP[:80], Sig_dn_w_CP[:80], t_w_CP[:80], R_t_Disc_w_CP[:80])
         # plt.xlabel('Time')
         # plt.ylabel('S(t) with GI')
-        # plt.title('Clean Rx OFDM signal vs Noisy Rx OFDM signal SNR = ' + str(gamma_b_dB) + ' with CP in time domain')
+        # plt.title('Clean Rx OFDM symbol vs Noisy Rx OFDM symbol Eb/N0 = ' + str(gamma_b_dB) + 'dB with CP in time domain')
         # plt.legend(['Tx s(t)', 'Rx R(t)'])
         # plt.grid()
         # plt.show()
@@ -262,7 +263,7 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data):
 
         # print(SER)
         SER_vec[gamma_b_dB] = SER
-        SER_analitic[gamma_b_dB] = (3/2)*math.erfc(np.sqrt(0.4*gamma_b_L))
+        SER_analitic[gamma_b_dB] = (3/2) * math.erfc(np.sqrt(0.4*gamma_b_L))
 
     print(SER_vec)
     print(SER_analitic)

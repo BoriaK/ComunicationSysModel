@@ -46,13 +46,12 @@ def RxMod(TxSignal, up, original_data):
     for gamma_b_dB in range(gamma_b_dB_Max + 1):
         gamma_b_L = 10 ** (0.1 * gamma_b_dB)
         N0_Continues = Eb_Continues / gamma_b_L
-        Ni_Discrete = np.sqrt(N0_Continues / 2) * np.random.normal(loc=0, scale=1, size=len(Rx_Sig))  # loc = mean,
-        # scale = STDV
+        Pn = N0_Continues/2
+        Ni_Continues = np.sqrt(Pn) * np.random.normal(loc=0, scale=1, size=len(Rx_Sig))  # loc = mean, scale = STDV
 
-        Nq_Continues = np.sqrt(N0_Continues / 2) * np.random.normal(loc=0, scale=1, size=len(Rx_Sig))  # loc = mean,
-        # scale = STDV
+        Nq_Continues = np.sqrt(Pn) * np.random.normal(loc=0, scale=1, size=len(Rx_Sig))  # loc = mean, scale = STDV
 
-        N_Continues = Ni_Discrete + 1j * Nq_Continues
+        N_Continues = Ni_Continues + 1j * Nq_Continues
 
         R_t = Rx_Sig + N_Continues
 
