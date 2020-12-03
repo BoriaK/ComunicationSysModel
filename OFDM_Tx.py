@@ -196,9 +196,9 @@ def OFDM_FFT_Tx(input_data):
     # plt.show()
 
     # D/A converter:
-    # up sample by factor of 32
+    # up sample by factor of 8
     # upsample using ZOH interpolation
-    up = 32
+    up = 8
     spaced_S_t_w_CP_up = np.zeros(up * len(S_t_w_CP), dtype=np.complex)
     spaced_S_t_w_CP_up[::up] = S_t_w_CP
     g_ZOH = np.ones(up, dtype=np.complex)
