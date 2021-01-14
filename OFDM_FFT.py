@@ -252,7 +252,7 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data):
 
         # print(SER)
         SER_vec[gamma_b_dB] = SER
-        SER_analitic[gamma_b_dB] = (3/2) * math.erfc(np.sqrt(0.4*gamma_b_L))
+        SER_analitic[gamma_b_dB] = 1 - (1 - ((np.sqrt(M)-1)/np.sqrt(M)) * math.erfc(np.sqrt((3 / (M-1)) * 0.5*np.log2(M) * gamma_b_L))) ** 2
 
     # print(SER_vec)
     # print(SER_analitic)
