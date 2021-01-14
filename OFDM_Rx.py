@@ -5,29 +5,32 @@ from scipy import signal
 import math
 from OFDM_Tx import OFDM_FFT_Tx
 from scatterPlot import scatter
+from Demodulator import demapper
 
-# Tx
-Num_Dta_chnk = int(100 * 1e3)  # number of data chunks
-# random 56 symbols of data per packet
-rng = np.random.default_rng()
 
-# 16QAM
-M = 16
-# infase data
-m_i = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56 * Num_Dta_chnk, dtype=np.int64, endpoint=True) - 1 - int(
-    np.sqrt(M))
-# quadrature data
-m_q = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56 * Num_Dta_chnk, dtype=np.int64, endpoint=True) - 1 - int(
-    np.sqrt(M))
-
-Tx_Dta = m_i + 1j * m_q
-
-# lookup table for Symbol energy discrete model:
-Es_vec = {'2': 1, '4': 2, '16': 10}
+# # Tx
+# Num_Dta_chnk = int(100 * 1e3)  # number of data chunks
+# # random 56 symbols of data per packet
+# rng = np.random.default_rng()
+#
+# # 16QAM
+# M = 16
+# # infase data
+# m_i = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56 * Num_Dta_chnk, dtype=np.int64, endpoint=True) - 1 - int(
+#     np.sqrt(M))
+# # quadrature data
+# m_q = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56 * Num_Dta_chnk, dtype=np.int64, endpoint=True) - 1 - int(
+#     np.sqrt(M))
+#
+# Tx_Dta = m_i + 1j * m_q
+#
+# # lookup table for Symbol energy discrete model:
+# Es_vec = {'2': 1, '4': 2, '16': 10}
 
 
 # Rx
-def OFDM_FFT_Rx(transmitted_signal, up, original_data):
+def OFDM_FFT_Rx(transmitted_signal, up, original_data, Mod_Num):
+    Num_Dta_chnk = int((len(transmitted_signal) / up)*0.8 / 64)
     GI = 0.8 * 1e-6  # 0.8[uS] Long GI
     Tsym = 3.2 * 1e-6  # 3.2 [uS] symbol time
     Delta_F = 1 / Tsym
@@ -36,26 +39,25 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data):
 
     t_sym = np.arange(0, Tsym, 1 / F_samp)
     t_w_CP = np.arange(0, (Tsym + GI) * Num_Dta_chnk, 1 / F_samp)
-    t_w_CP_up = np.arange(0, (Tsym + GI) * Num_Dta_chnk, 1 / (up * F_samp))
     F_axis = np.arange(-F_samp / 2, F_samp / 2, F_samp / len(t_sym))
 
     Dta_vec = np.zeros(56 * Num_Dta_chnk, dtype=np.complex)
-    Dta_I = np.zeros(56 * Num_Dta_chnk, dtype=np.float)
-    Dta_Q = np.zeros(56 * Num_Dta_chnk, dtype=np.float)
 
     Rx_Sig_w_CP = transmitted_signal  # Received signal without noise
 
-    # Add noise continues channel
+    # Add noise Discrete channel
     # Es_Numeric = (1 / (100*up)) * np.sum(np.abs(Rx_Sig_w_CP[:100*up*80]) ** 2)  # compute average Symbol energy on 100
     # symbols, 80 samples per symbol upsampled by factor up
     # print(Es_Numeric)
-    Es_Theoretical = Es_vec[str(M)]
-    Eb_Discrete = Es_Theoretical / np.log2(M)
+    # lookup table for Symbol energy discrete model:
+    Es_vec = {'2': 1, '4': 2, '16': 10, '64': 42}
+    Es_Theoretical = Es_vec[str(Mod_Num)]
+    Eb_Discrete = Es_Theoretical / np.log2(Mod_Num)
     gamma_b_dB_Max = 15
     SER_vec = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
     SER_analitic = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
     for gamma_b_dB in range(gamma_b_dB_Max + 1):
-        # for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):  # for debug for single SNR/bit value
+        # for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):    # for debug for single SNR/bit value
         gamma_b_L = 10 ** (0.1 * gamma_b_dB)
         N0_Discrete = Eb_Discrete / gamma_b_L
         Pn = (N0_Discrete / 2) * (1 / 64)  # the poise power for 1 symbol devided by the number of samples
@@ -79,7 +81,6 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data):
         # A/D
         dn = up
         R_t_Disc_w_CP = R_t_w_CP[::dn]
-
 
         # S/P Converter
         for chnk in range(Num_Dta_chnk):
@@ -121,46 +122,26 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data):
 
             Dta_vec[chnk * len(Dta_vec_chnk):(chnk + 1) * len(Dta_vec_chnk)] = Dta_vec_chnk
 
-        # constellation:
+        # constalation:
         if gamma_b_dB == gamma_b_dB_Max:
-            scatter(Dta_vec, M, gamma_b_dB)
+            scatter(Dta_vec, Mod_Num, gamma_b_dB)
 
-        # De mapper - decision circle
+        # Demapper - descision circle
 
-        # the thresholds are {-2, 0, 2}
-
-        ind_Re_3 = (np.real(Dta_vec) > 2)
-        ind_Re_1 = (np.real(Dta_vec) > 0)
-        ind_Re_min1 = (np.real(Dta_vec) < 0)
-        ind_Re_min3 = (np.real(Dta_vec) < -2)
-        ind_Im_3 = (np.imag(Dta_vec) > 2)
-        ind_Im_1 = (np.imag(Dta_vec) > 0)
-        ind_Im_min1 = (np.imag(Dta_vec) < 0)
-        ind_Im_min3 = (np.imag(Dta_vec) < -2)
-
-        Dta_I[np.logical_and(ind_Re_1, ind_Re_3)] = 3
-        Dta_I[np.logical_and(ind_Re_1, ~ind_Re_3)] = 1
-        Dta_I[np.logical_and(~ind_Re_min3, ind_Re_min1)] = -1
-        Dta_I[np.logical_and(ind_Re_min3, ind_Re_min1)] = -3
-
-        Dta_Q[np.logical_and(ind_Im_1, ind_Im_3)] = 3
-        Dta_Q[np.logical_and(ind_Im_1, ~ind_Im_3)] = 1
-        Dta_Q[np.logical_and(~ind_Im_min3, ind_Im_min1)] = -1
-        Dta_Q[np.logical_and(ind_Im_min3, ind_Im_min1)] = -3
-
-        Rx_Dta = Dta_I + 1j * Dta_Q
+        Rx_Dta = demapper(Dta_vec, Mod_Num)
 
         # print(Dta_vec)
 
         # performance check:
         Tx_Dta = original_data
         correct_Symbols = (Tx_Dta == Rx_Dta) * 1
-        # print(correct_Symbols[:int(len(correct_Symbols) / Num_Dta_chnk)])
         SER = 1 - np.sum(correct_Symbols) / len(Rx_Dta)
 
         # print(SER)
         SER_vec[gamma_b_dB] = SER
-        SER_analitic[gamma_b_dB] = (3 / 2) * math.erfc(np.sqrt(0.4 * gamma_b_L))
+        SER_analitic[gamma_b_dB] = 1 - (1 - ((np.sqrt(Mod_Num) - 1) / np.sqrt(Mod_Num)) *
+                                        math.erfc(
+                                            np.sqrt((3 / (Mod_Num - 1)) * 0.5 * np.log2(Mod_Num) * gamma_b_L))) ** 2
 
     # print(SER_vec)
     # print(SER_analitic)
@@ -174,10 +155,9 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data):
     plt.figlegend(['SER Numeric', 'SER Analytic'])
     plt.show()
 
+# def main():
+#     S_t_w_CP_up, up = OFDM_FFT_Tx(Tx_Dta)
+#     OFDM_FFT_Rx(S_t_w_CP_up, up, Tx_Dta)
 
-def main():
-    S_t_w_CP_up, up = OFDM_FFT_Tx(Tx_Dta)
-    OFDM_FFT_Rx(S_t_w_CP_up, up, Tx_Dta)
 
-
-main()
+# main()

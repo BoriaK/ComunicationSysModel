@@ -5,18 +5,18 @@ from scipy import signal
 import math
 
 
-Num_Dta_chnk = int(100 * 1e3)  # number of data chunks
-# random 56 symbols of data per packet
-rng = np.random.default_rng()
-
-# 16QAM
-M = 16
-# infase data
-m_i = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56*Num_Dta_chnk, dtype=np.int64, endpoint=True) - 1 - int(np.sqrt(M))
-# quadrature data
-m_q = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56*Num_Dta_chnk, dtype=np.int64, endpoint=True) - 1 - int(np.sqrt(M))
-
-Dta_Tx = m_i + 1j * m_q
+# Num_Dta_chnk = int(100 * 1e3)  # number of data chunks
+# # random 56 symbols of data per packet
+# rng = np.random.default_rng()
+#
+# # 16QAM
+# M = 16
+# # infase data
+# m_i = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56*Num_Dta_chnk, dtype=np.int64, endpoint=True) - 1 - int(np.sqrt(M))
+# # quadrature data
+# m_q = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56*Num_Dta_chnk, dtype=np.int64, endpoint=True) - 1 - int(np.sqrt(M))
+#
+# Dta_Tx = m_i + 1j * m_q
 
 
 def OFDM_Oscilator_Tx():
@@ -120,6 +120,7 @@ def OFDM_Oscilator_Tx():
 
 
 def OFDM_FFT_Tx(input_data):
+    Num_Dta_chnk = int(len(input_data) / 56)
     GI = 0.8 * 1e-6  # 0.8[uS] Long GI
     Tsym = 3.2 * 1e-6  # 3.2 [uS] symbol time
     Delta_F = 1 / Tsym
@@ -133,7 +134,7 @@ def OFDM_FFT_Tx(input_data):
     # S_f = np.zeros((Num_Dta_chnk, len(F_axis)), dtype=np.complex)
     for chnk in range(Num_Dta_chnk):
         S_f_chnk = np.zeros(len(F_axis), dtype=np.complex)
-        Dta_Tx_chnk = input_data[chnk * 56:(chnk+1) * 56]
+        Dta_Tx_chnk = input_data[range(chnk * 56, (chnk + 1) * 56)]
         # prepare the data in frequency domain:
         skip = 0
         for k in range(len(F_axis)):
@@ -159,7 +160,7 @@ def OFDM_FFT_Tx(input_data):
 
         # single OFDM symbol in Time domain
         # plt.figure()
-        # plt.plot(t_sym, S_t_chnk)
+        # plt.plot(t, S_t_chnk)
         # plt.xlabel('Time')
         # plt.ylabel('S(t)')
         # plt.grid()
@@ -170,9 +171,9 @@ def OFDM_FFT_Tx(input_data):
 
         # inserting cyclic prefix:
         S_t_chnk_w_CP = np.zeros(int(len(S_t_chnk) + 16), dtype=np.complex)
-        CP = S_t_chnk[int(len(S_t_chnk) - 16):len(S_t_chnk)]
-        S_t_chnk_w_CP[:16] = CP
-        S_t_chnk_w_CP[16:len(S_t_chnk_w_CP)] = S_t_chnk
+        CP = S_t_chnk[range(int(len(S_t_chnk) - 16), len(S_t_chnk))]
+        S_t_chnk_w_CP[range(16)] = CP
+        S_t_chnk_w_CP[range(16, len(S_t_chnk_w_CP))] = S_t_chnk
 
         t_sym_w_CP = np.arange(0, Tsym + GI, 1 / F_samp)  # new Symbol time includes cyclic prefix
 
@@ -184,7 +185,7 @@ def OFDM_FFT_Tx(input_data):
         # plt.grid()
         # plt.show()
 
-        S_t_w_CP[chnk*len(S_t_chnk_w_CP):(chnk+1)*len(S_t_chnk_w_CP)] = S_t_chnk_w_CP
+        S_t_w_CP[chnk * len(S_t_chnk_w_CP):(chnk + 1) * len(S_t_chnk_w_CP)] = S_t_chnk_w_CP
 
     t_w_CP = np.arange(0, (Tsym + GI) * Num_Dta_chnk, 1 / F_samp)
     # plt.figure()
@@ -215,17 +216,12 @@ def OFDM_FFT_Tx(input_data):
     # plt.legend(['s(t)', 'upsampled s(t)'])
     # plt.show()
 
-    # to compare symbol energy of up-sampled vs down-sampled signals
-    # Es = (1/(100*up))*np.sum(np.abs(S_t_w_CP_up[:100*80*up])**2)
-    # print(Es)
-
     return S_t_w_CP_up, up
 
 
-
-def main():
-    # OFDM_Oscilator_Tx()
-    OFDM_FFT_Tx(Dta_Tx)
+# def main():
+#     # OFDM_Oscilator_Tx()
+#     OFDM_FFT_Tx(Dta_Tx)
 
 
 # main()

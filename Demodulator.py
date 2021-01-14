@@ -31,15 +31,15 @@ def demapper(R_DataVec, Mod_Num):
         ind_Im_min1 = (np.imag(R_DataVec) < 0)
         ind_Im_min3 = (np.imag(R_DataVec) < -2)
 
-        Dta_I[np.logical_and(ind_Re_1, ind_Re_3)] = 3
+        Dta_I[ind_Re_3] = 3
         Dta_I[np.logical_and(ind_Re_1, ~ind_Re_3)] = 1
         Dta_I[np.logical_and(~ind_Re_min3, ind_Re_min1)] = -1
-        Dta_I[np.logical_and(ind_Re_min3, ind_Re_min1)] = -3
+        Dta_I[ind_Re_min3] = -3
 
-        Dta_Q[np.logical_and(ind_Im_1, ind_Im_3)] = 3
+        Dta_Q[ind_Im_3] = 3
         Dta_Q[np.logical_and(ind_Im_1, ~ind_Im_3)] = 1
         Dta_Q[np.logical_and(~ind_Im_min3, ind_Im_min1)] = -1
-        Dta_Q[np.logical_and(ind_Im_min3, ind_Im_min1)] = -3
+        Dta_Q[ind_Im_min3] = -3
 
     if Mod_Num == 64:
         # the thresholds are {-6, -4, -2, 0, 2, 4, 6}

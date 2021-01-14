@@ -12,7 +12,7 @@ rng = np.random.default_rng()
 # lookup table for Symbol energy discrete model:
 Es_vec = {'2': 1, '4': 2, '16': 10, '64': 42}
 # 64QAM
-M = 4
+M = 64
 # infase data
 m_i = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56 * Num_Dta_chnk, dtype=np.int64, endpoint=True) - 1 - int(
     np.sqrt(M))
@@ -135,8 +135,6 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data):
     F_axis = np.arange(-F_samp / 2, F_samp / 2, F_samp / len(t_sym))
 
     Dta_vec = np.zeros(56 * Num_Dta_chnk, dtype=np.complex)
-    Dta_I = np.zeros(56 * Num_Dta_chnk, dtype=np.float)
-    Dta_Q = np.zeros(56 * Num_Dta_chnk, dtype=np.float)
 
     Rx_Sig_w_CP = transmitted_signal  # Received signal without noise
 
