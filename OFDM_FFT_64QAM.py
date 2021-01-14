@@ -12,7 +12,7 @@ rng = np.random.default_rng()
 # lookup table for Symbol energy discrete model:
 Es_vec = {'2': 1, '4': 2, '16': 10, '64': 42}
 # 64QAM
-M = 64
+M = 4
 # infase data
 m_i = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56 * Num_Dta_chnk, dtype=np.int64, endpoint=True) - 1 - int(
     np.sqrt(M))

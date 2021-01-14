@@ -5,6 +5,20 @@ def demapper(R_DataVec, Mod_Num):
     Dta_I = np.zeros(len(R_DataVec), dtype=np.float)
     Dta_Q = np.zeros(len(R_DataVec), dtype=np.float)
 
+    if Mod_Num == 4:
+        # the thresholds are {0}
+
+        ind_Re_1 = (np.real(R_DataVec) > 0)
+        ind_Re_min1 = (np.real(R_DataVec) < 0)
+        ind_Im_1 = (np.imag(R_DataVec) > 0)
+        ind_Im_min1 = (np.imag(R_DataVec) < 0)
+
+        Dta_I[ind_Re_1] = 1
+        Dta_I[ind_Re_min1] = -1
+
+        Dta_Q[ind_Im_1] = 1
+        Dta_Q[ind_Im_min1] = -1
+
     if Mod_Num == 16:
         # the thresholds are {-2, 0, 2}
 
