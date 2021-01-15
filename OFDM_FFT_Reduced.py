@@ -13,7 +13,7 @@ Num_Dta_chnk = int(100 * 1e3)  # number of data chunks
 rng = np.random.default_rng()
 # M-QAM
 # M = {4, 16, 64}
-M = 64
+M = 16
 # infase data
 m_i = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56 * Num_Dta_chnk, dtype=np.int64, endpoint=True) - 1 - int(
     np.sqrt(M))

@@ -5,7 +5,7 @@ from scipy import signal
 import math
 from OFDM_Tx import OFDM_FFT_Tx
 from scatterPlot import scatter
-from Demodulator import demapper
+from Auto_Demod import deMapper
 
 
 # # Tx
@@ -128,7 +128,7 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data, Mod_Num):
 
         # Demapper - descision circle
 
-        Rx_Dta = demapper(Dta_vec, Mod_Num)
+        Rx_Dta = deMapper(Dta_vec, Mod_Num)
 
         # print(Dta_vec)
 

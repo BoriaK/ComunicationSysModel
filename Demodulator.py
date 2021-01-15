@@ -5,6 +5,7 @@ def demapper(R_DataVec, Mod_Num):
     Dta_I = np.zeros(len(R_DataVec), dtype=np.float)
     Dta_Q = np.zeros(len(R_DataVec), dtype=np.float)
 
+
     if Mod_Num == 4:
         # the thresholds are {0}
 
