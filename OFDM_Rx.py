@@ -8,29 +8,9 @@ from scatterPlot import scatter
 from Auto_Demod import deMapper
 
 
-# # Tx
-# Num_Dta_chnk = int(100 * 1e3)  # number of data chunks
-# # random 56 symbols of data per packet
-# rng = np.random.default_rng()
-#
-# # 16QAM
-# M = 16
-# # infase data
-# m_i = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56 * Num_Dta_chnk, dtype=np.int64, endpoint=True) - 1 - int(
-#     np.sqrt(M))
-# # quadrature data
-# m_q = 2 * rng.integers(1, high=int(np.sqrt(M)), size=56 * Num_Dta_chnk, dtype=np.int64, endpoint=True) - 1 - int(
-#     np.sqrt(M))
-#
-# Tx_Dta = m_i + 1j * m_q
-#
-# # lookup table for Symbol energy discrete model:
-# Es_vec = {'2': 1, '4': 2, '16': 10}
-
-
 # Rx
 def OFDM_FFT_Rx(transmitted_signal, up, original_data, Mod_Num):
-    Num_Dta_chnk = int((len(transmitted_signal) / up)*0.8 / 64)
+    Num_Dta_chnk = int((len(transmitted_signal) / up) * 0.8 / 64)
     GI = 0.8 * 1e-6  # 0.8[uS] Long GI
     Tsym = 3.2 * 1e-6  # 3.2 [uS] symbol time
     Delta_F = 1 / Tsym
@@ -46,14 +26,9 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data, Mod_Num):
     Rx_Sig_w_CP = transmitted_signal  # Received signal without noise
 
     # Add noise Discrete channel
-    # Es_Numeric = (1 / (100*up)) * np.sum(np.abs(Rx_Sig_w_CP[:100*up*80]) ** 2)  # compute average Symbol energy on 100
-    # symbols, 80 samples per symbol upsampled by factor up
-    # print(Es_Numeric)
-    # lookup table for Symbol energy discrete model:
-    Es_vec = {'2': 1, '4': 2, '16': 10, '64': 42}
-    Es_Theoretical = Es_vec[str(Mod_Num)]
+    Es_Theoretical = 2 * (Mod_Num - 1) / 3  # the theoretical formula for average Es calculation
     Eb_Discrete = Es_Theoretical / np.log2(Mod_Num)
-    gamma_b_dB_Max = 15
+    gamma_b_dB_Max = 20
     SER_vec = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
     SER_analitic = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
     for gamma_b_dB in range(gamma_b_dB_Max + 1):
@@ -69,14 +44,18 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data, Mod_Num):
 
         R_t_w_CP = Rx_Sig_w_CP + N_Discrete
 
-        # plt.figure()
-        # plt.plot(t_w_CP_up[:80*up], Rx_Sig_w_CP[:80*up], t_w_CP_up[:80*up], R_t_w_CP[:80*up])
-        # plt.xlabel('Time')
-        # plt.ylabel('S(t) with GI')
-        # plt.title('Clean Rx OFDM symbol vs Noisy Rx OFDM symbol Eb/N0 = ' + str(gamma_b_dB) + 'dB with CP in time domain')
-        # plt.legend(['Tx s(t)', 'Rx R(t)'])
-        # plt.grid()
-        # plt.show()
+        ##########################for Plot#####################
+        if gamma_b_dB == gamma_b_dB_Max/2:
+            t_w_CP_up = np.arange(0, (Tsym + GI) * Num_Dta_chnk, 1 / (up * F_samp))
+            plt.figure()
+            plt.plot(t_w_CP_up[:80 * up], Rx_Sig_w_CP[:80 * up], t_w_CP_up[:80 * up], R_t_w_CP[:80 * up])
+            plt.xlabel('Time')
+            plt.ylabel('S(t) with GI')
+            plt.title(
+                'Clean Rx OFDM symbol vs Noisy Rx OFDM symbol Eb/N0 = ' + str(gamma_b_dB) + 'dB with CP in time domain')
+            plt.legend(['Tx s(t)', 'Rx R(t)'])
+            plt.grid()
+            plt.show()
 
         # A/D
         dn = up
