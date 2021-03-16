@@ -28,7 +28,7 @@ Sig = np.sin(2 * np.pi * freq * t)
 Sig2 = np.sin(2 * np.pi * freq * (t - Tao))
 
 Lambda = 3e8 / freq  # wavelength of the transmitted signal - [m]
-######For Debug#########################33
+######For Debug#########################
 LOS_Component = np.real(
     (Lambda / (4 * np.pi)) * ((np.sqrt(G_l) * Sig * np.exp((-1j * 2 * np.pi * los) / Lambda)) / los))
 SecondRay = np.real(
