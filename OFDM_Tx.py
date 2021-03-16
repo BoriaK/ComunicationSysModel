@@ -9,7 +9,7 @@ def OFDM_FFT_Tx(input_data):
     Num_Dta_chnk = int(len(input_data) / 56)
     GI = 0.8 * 1e-6  # 0.8[uS] Long GI
     Tsym = 3.2 * 1e-6  # 3.2 [uS] symbol time
-    Delta_F = 1 / Tsym
+    Delta_F = 1 / Tsym  # channel spacing
     F = 1 / (Tsym + GI)  # analog Frequency
     F_samp = 20 * 1e6  # sample frquency 20MHz
 
