@@ -45,17 +45,17 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data, Mod_Num):
         R_t_w_CP = Rx_Sig_w_CP + N_Discrete
 
         ##########################for Plot#####################
-        if gamma_b_dB == gamma_b_dB_Max/2:
-            t_w_CP_up = np.arange(0, (Tsym + GI) * Num_Dta_chnk, 1 / (up * F_samp))
-            plt.figure()
-            plt.plot(t_w_CP_up[:80 * up], Rx_Sig_w_CP[:80 * up], t_w_CP_up[:80 * up], R_t_w_CP[:80 * up])
-            plt.xlabel('Time')
-            plt.ylabel('S(t) with GI')
-            plt.title(
-                'Clean Rx OFDM symbol vs Noisy Rx OFDM symbol Eb/N0 = ' + str(gamma_b_dB) + 'dB with CP in time domain')
-            plt.legend(['Tx s(t)', 'Rx R(t)'])
-            plt.grid()
-            plt.show()
+        # if gamma_b_dB == gamma_b_dB_Max / 2:
+        #     t_w_CP_up = np.arange(0, (Tsym + GI) * Num_Dta_chnk, 1 / (up * F_samp))
+        #     plt.figure()
+        #     plt.plot(t_w_CP_up[:80 * up], Rx_Sig_w_CP[:80 * up], t_w_CP_up[:80 * up], R_t_w_CP[:80 * up])
+        #     plt.xlabel('Time')
+        #     plt.ylabel('S(t) with GI')
+        #     plt.title(
+        #         'Clean Rx OFDM symbol vs Noisy Rx OFDM symbol Eb/N0 = ' + str(gamma_b_dB) + 'dB with CP in time domain')
+        #     plt.legend(['Tx s(t)', 'Rx R(t)'])
+        #     plt.grid()
+        #     plt.show()
 
         # A/D
         dn = up

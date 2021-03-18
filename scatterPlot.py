@@ -23,6 +23,6 @@ def scatter(InputSig, ModNum, SNR_bit):
     plt.hist2d(np.real(InputSig), np.imag(InputSig), bins=NOB, cmap='jet')
     plt.xlabel('Infase')
     plt.ylabel('Quadrature')
-    plt.title('Constellation of Rx OFDM signal ' + str(ModNum) + '-QAM ' + 'with SNR = ' + str(SNR_bit))
+    plt.title('Constellation of Rx OFDM signal ' + str(ModNum) + '-QAM ' + 'with SNR = ' + str(SNR_bit) + 'dB')
     plt.grid()
     plt.show()
