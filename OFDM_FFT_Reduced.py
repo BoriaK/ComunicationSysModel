@@ -7,7 +7,8 @@ from scatterPlot import scatter
 from Demodulator import demapper
 from OFDM_Tx import OFDM_FFT_Tx
 from OFDM_Rx import OFDM_FFT_Rx
-from Channel import TwoRayModel
+# from Channels import Channel
+import Channels
 
 Num_Dta_chnk = int(100 * 1e3)  # number of data chunks
 # random 56 symbols of data per packet
@@ -26,7 +27,7 @@ Dta_Tx = m_i + 1j * m_q
 
 def main():
     S_t_w_CP_up, up = OFDM_FFT_Tx(Dta_Tx)
-    R_t_w_CP_up = TwoRayModel(S_t_w_CP_up, up)
+    R_t_w_CP_up = Channels.TwoRayModel(S_t_w_CP_up, up)
     OFDM_FFT_Rx(R_t_w_CP_up, up, Dta_Tx, M)
 
 

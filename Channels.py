@@ -12,7 +12,19 @@ hr = 2  # distance of the receiver from the ground - [m]
 dist = 30  # the ground distance between Tx antenna and Rx antenna - [m]
 
 
+def NoChannel(inSignal):
+
+    outSignal = inSignal
+
+    return outSignal
+
+
 def TwoRayModel(inSignal, up):
+
+    States = {1: 'Path Loss + Phase Shift + MP', 2: 'Path Loss + MP', 3: 'Phase Shift + MP',
+              4: 'Relative Path Loss and Phase Shift + MP'}
+    State = States[4]
+
     # Signal Params:
     GI = 0.8 * 1e-6  # 0.8[uS] Long GI
     Tsym = 3.2 * 1e-6  # 3.2 [uS] symbol time
@@ -51,36 +63,42 @@ def TwoRayModel(inSignal, up):
     # LOS_Component = (Lambda / (4 * np.pi)) * ((np.sqrt(G_l) * inSignal * np.exp((-1j * 2 * np.pi * los) / Lambda)) /
     #                                           los)
     # SecondRay = (Lambda / (4 * np.pi)) * ((R * (np.sqrt(G_r)) * inSignal2 * np.exp((-1j * 2 * np.pi *
-    #                                                                                 (x1 + x2)) / Lambda)) / (x1 + x2))
+    #                                                                                 (x1 + x2)) / Lambda)) / (
+    #                                                   x1 + x2))
     # outSignal = np.real((LOS_Component + SecondRay) * np.exp(1j * 2 * np.pi * Fc * t))
-
     # Complex Base Band Signal:
+    if State == 'Path Loss + Phase Shift + MP':
+        # Gain (Path Loss) + Phase Shift + Multi Path:
+        LOS_Component = (Lambda / (4 * np.pi)) * (
+                (np.sqrt(G_l) * inSignal * np.exp((-1j * 2 * np.pi * los) / Lambda)) /
+                los)
+        SecondRay = (Lambda / (4 * np.pi)) * (
+                (R * (np.sqrt(G_r)) * inSignal2 * np.exp((-1j * 2 * np.pi * (x1 + x2)) /
+                                                         Lambda)) / (x1 + x2))
 
-    # Gain (Path Loss) + Phase + Multi Path:
-    # LOS_Component = (Lambda / (4 * np.pi)) * ((np.sqrt(G_l) * inSignal * np.exp((-1j * 2 * np.pi * los) / Lambda)) /
-    #                                           los)
-    # SecondRay = (Lambda / (4 * np.pi)) * ((R * (np.sqrt(G_r)) * inSignal2 * np.exp((-1j * 2 * np.pi * (x1 + x2)) /
-    #                                                                                Lambda)) / (x1 + x2))
+    elif State == 'Path Loss + MP':
+        # Gain (Path Loss) + Multi Path Only:
+        LOS_Component = (Lambda / (4 * np.pi)) * ((np.sqrt(G_l) * inSignal) / los)
+        SecondRay = (Lambda / (4 * np.pi)) * ((R * (np.sqrt(G_r)) * inSignal2) / (x1 + x2))
 
-    # Gain (Path Loss) + Multi Path Only:
-    # LOS_Component = (Lambda / (4 * np.pi)) * ((np.sqrt(G_l) * inSignal) / los)
-    # SecondRay = (Lambda / (4 * np.pi)) * ((R * (np.sqrt(G_r)) * inSignal2) / (x1 + x2))
+    elif State == 'Phase Shift + MP':
+        # Phase Shift + Multi Path Only:
+        LOS_Component = np.sqrt(G_l) * inSignal * np.exp((-1j * 2 * np.pi * los) / Lambda)
+        SecondRay = R * np.sqrt(G_r) * inSignal2 * np.exp((-1j * 2 * np.pi * (x1 + x2)) / Lambda)
 
-    # Phase + Multi Path Only:
-    LOS_Component = np.sqrt(G_l) * inSignal * np.exp((-1j * 2 * np.pi * los) / Lambda)
-    SecondRay = R * np.sqrt(G_r) * inSignal2 * np.exp((-1j * 2 * np.pi * (x1 + x2)) / Lambda)
-
-    # Multi Path Only:
-    # Normalize the path loss and the phase shift to the reflecting component:
-    # LOS_Component = np.sqrt(G_l) * inSignal
-    # SecondRay = (R * np.sqrt(G_r) * inSignal2 * np.exp((-1j * 2 * np.pi * (x1 + x2 - los)) / Lambda)) * (
-    #         los / (x1 + x2))
+    elif State == 'Relative Path Loss and Phase Shift + MP':
+        # Multi Path Only:
+        # Normalize the path loss and the phase shift to the reflecting component:
+        LOS_Component = np.sqrt(G_l) * inSignal
+        SecondRay = (R * np.sqrt(G_r) * inSignal2 * np.exp((-1j * 2 * np.pi * (x1 + x2 - los)) / Lambda)) * (
+                los / (x1 + x2))
 
     outSignal = LOS_Component + SecondRay
 
     # Recieved Power if Pt = 1:
-    Pr = math.pow(np.abs(np.sqrt(G_l) + R * np.sqrt(G_r) * np.exp((-1j * 2 * np.pi * (x1 + x2 - los)) / Lambda) * (
-            los / (x1 + x2))), 2)
+    Pr = math.pow(
+        np.abs(np.sqrt(G_l) + R * np.sqrt(G_r) * np.exp((-1j * 2 * np.pi * (x1 + x2 - los)) / Lambda) * (
+                los / (x1 + x2))), 2)
 
     plt.figure()
     plt.plot(t[:int(len(t) / Num_Dta_chnk)], LOS_Component[:int(len(inSignal) / Num_Dta_chnk)],
