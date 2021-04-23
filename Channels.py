@@ -13,16 +13,15 @@ dist = 30  # the ground distance between Tx antenna and Rx antenna - [m]
 
 
 def NoChannel(inSignal):
-
     outSignal = inSignal
 
     return outSignal
 
 
 def TwoRayModel(inSignal, up):
-
-    States = {1: 'Path Loss + Phase Shift + MP', 2: 'Path Loss + MP', 3: 'Phase Shift + MP',
-              4: 'Relative Path Loss and Phase Shift + MP'}
+    States = {1: 'Path Loss + Phase Shift + MP', 2: 'Path Loss + MP', 3: 'Phase Shift + MP', 4: 'Relative Path Loss, '
+                                                                                                'Phase Shift + MP',
+              5: 'Relative Path Loss and Phase Shift + MP'}
     State = States[4]
 
     # Signal Params:
@@ -41,6 +40,7 @@ def TwoRayModel(inSignal, up):
     x1 = ht / np.sin(Theta)  # distance from Tx antenna till impact point - [m]
     x2 = hr / np.sin(Theta)  # distance from impact point till Rx antenna - [m]
     los = np.sqrt((ht - hr) ** 2 + dist ** 2)  # LOS distance from Tx antenna till Rx antenna - [m] ?
+    # los = 12.5  # for debug
     Tao = (x1 + x2 - los) / 3e8  # time delay of the reflected signal [sec]
     # Tao = 1.03 * 0.8e-6  # for testing
     TaoSamp = int(np.around(Tao * F_samp))  # number of samples equal to Tau delay [sec]
@@ -85,6 +85,15 @@ def TwoRayModel(inSignal, up):
         # Phase Shift + Multi Path Only:
         LOS_Component = np.sqrt(G_l) * inSignal * np.exp((-1j * 2 * np.pi * los) / Lambda)
         SecondRay = R * np.sqrt(G_r) * inSignal2 * np.exp((-1j * 2 * np.pi * (x1 + x2)) / Lambda)
+    elif State == 'Relative Path Loss, Phase Shift + MP':
+        # Phase Shift + Multi Path Only:
+        LOS_Component = np.sqrt(G_l) * inSignal * np.exp((-1j * 2 * np.pi * los) / Lambda)
+        # LOS_Component = np.sqrt(G_l) * inSignal * np.exp(-1j * 0.25 * np.pi)
+        # LOS_Component = np.sqrt(G_l) * inSignal
+        # SecondRay = R * np.sqrt(G_r) * inSignal2 * np.exp((-1j * 2 * np.pi * (x1 + x2)) / Lambda)
+        K = 0.9  # K is a weight we give second component
+        SecondRay = K * R * np.sqrt(G_r) * inSignal2 * np.exp((-1j * 2 * np.pi * (x1 + x2)) / Lambda)
+        # SecondRay = (R * np.sqrt(G_r) * inSignal2)
 
     elif State == 'Relative Path Loss and Phase Shift + MP':
         # Multi Path Only:
@@ -93,23 +102,38 @@ def TwoRayModel(inSignal, up):
         SecondRay = (R * np.sqrt(G_r) * inSignal2 * np.exp((-1j * 2 * np.pi * (x1 + x2 - los)) / Lambda)) * (
                 los / (x1 + x2))
 
-    outSignal = LOS_Component + SecondRay
 
+    outSignal = LOS_Component + SecondRay
+    # ######### for debug:####################################################################
+    Gain = np.abs(R) * np.sqrt(G_r) * (los / (x1 + x2)) * K
+    # LOSPhase = (-1 * 2 * los) / Lambda  # Total Phase LOS component[pi-rad]
+    LOSPhase = -np.mod((2 * los/Lambda), 2)
+    # SecondPhase = (-1 * 2 * (x1 + x2)) / Lambda + 1  # Total Phase second component[pi-rad]
+    SecondPhase = -np.mod(2 * (x1 + x2) / Lambda - 1, 2)
+    RelativePhase = SecondPhase - LOSPhase  # Relative Phase [pi-rad]
+    print('Gain = ', Gain)
+    print('LOS Phase = ', LOSPhase)
+    print('Second Phase = ', SecondPhase)
+    print('Relative Phase = ', RelativePhase)
+    fixedSignal = (LOS_Component + SecondRay) * np.exp(-1j*LOSPhase*np.pi)
+###########################################################################################################
     # Recieved Power if Pt = 1:
     Pr = math.pow(
-        np.abs(np.sqrt(G_l) + R * np.sqrt(G_r) * np.exp((-1j * 2 * np.pi * (x1 + x2 - los)) / Lambda) * (
+        np.abs(np.sqrt(G_l) + K * R * np.sqrt(G_r) * np.exp((-1j * 2 * np.pi * (x1 + x2 - los)) / Lambda) * (
                 los / (x1 + x2))), 2)
+    print('Pr/Pt = ', Pr)
 
-    plt.figure()
-    plt.plot(t[:int(len(t) / Num_Dta_chnk)], LOS_Component[:int(len(inSignal) / Num_Dta_chnk)],
-             t[:int(len(t) / Num_Dta_chnk)],
-             SecondRay[:int(len(inSignal2) / Num_Dta_chnk)], t[:int(len(t) / Num_Dta_chnk)],
-             outSignal[:int(len(outSignal) / Num_Dta_chnk)])
-    plt.xlabel('Time')
-    plt.ylabel('S(t)')
-    plt.title('2ray Model')
-    plt.grid()
-    plt.legend(['s(t)', '\u03B1*s(t-Tau)', 'outSignal'])
-    plt.show()
+    # plt.figure()
+    # plt.plot(t[:int(len(t) / Num_Dta_chnk)], LOS_Component[:int(len(inSignal) / Num_Dta_chnk)],
+    #          t[:int(len(t) / Num_Dta_chnk)],
+    #          SecondRay[:int(len(inSignal2) / Num_Dta_chnk)], t[:int(len(t) / Num_Dta_chnk)],
+    #          outSignal[:int(len(outSignal) / Num_Dta_chnk)])
+    # plt.xlabel('Time')
+    # plt.ylabel('S(t)')
+    # plt.title('2ray Model')
+    # plt.grid()
+    # plt.legend(['s(t)', '\u03B1*s(t-Tau)', 'outSignal'])
+    # plt.show()
 
-    return outSignal
+    # return outSignal
+    return fixedSignal

@@ -32,7 +32,7 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data, Mod_Num):
     SER_vec = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
     SER_analitic = np.zeros(gamma_b_dB_Max + 1, dtype=np.float)
     for gamma_b_dB in range(gamma_b_dB_Max + 1):
-        # for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):    # for debug for single SNR/bit value
+    # for gamma_b_dB in range(gamma_b_dB_Max, gamma_b_dB_Max + 1):    # for debug for single SNR/bit value
         gamma_b_L = 10 ** (0.1 * gamma_b_dB)
         N0_Discrete = Eb_Discrete / gamma_b_L
         Pn = (N0_Discrete / 2) * (1 / 64)  # the poise power for 1 symbol devided by the number of samples
@@ -122,7 +122,7 @@ def OFDM_FFT_Rx(transmitted_signal, up, original_data, Mod_Num):
                                         math.erfc(
                                             np.sqrt((3 / (Mod_Num - 1)) * 0.5 * np.log2(Mod_Num) * gamma_b_L))) ** 2
 
-    # print(SER_vec)
+    print('Measured SER = ', SER_vec)
     # print(SER_analitic)
 
     # plot SER as function of SNR/bit
